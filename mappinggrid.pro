@@ -29,7 +29,9 @@ SOURCES += main.cpp \
     occupancygrid.cpp \ 
     keyboard.cpp \ 
     controller.cpp \ 
-    bot.cpp 
+    bot.cpp \ 
+    util.cpp \
+    bayes.cpp
  
 HEADERS  += \ 
     scenegrid.h \ 
@@ -37,7 +39,9 @@ HEADERS  += \
     occupancygrid.h \ 
     keyboard.h \ 
     controller.h \ 
-    bot.h 
+    bot.h \ 
+    util.h \
+    bayes.h
  
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../../usr/local/Aria/lib/release/ -lAria 
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../../usr/local/Aria/lib/debug/ -lAria 

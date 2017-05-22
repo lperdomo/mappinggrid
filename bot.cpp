@@ -11,7 +11,7 @@ Bot::Bot(int *argc, char **argv) :
     ArRobot(), 
     QObject() 
 { 
-    velForward = 200; 
+    velForward = 200;
 } 
  
 Bot::~Bot() 
@@ -203,10 +203,3 @@ double Bot::getVelForward()
 { 
     return velForward; 
 } 
- 
-/*double x = this->getX()/5 + 500/2, y = 500/2 - this->getY()/5; 
-double th = atan2(x, y)*180/M_PI; 
-double rth = this->getTh(); 
-double rad = (th-rth)*M_PI/180; 
-if (fabs(rad) > M_PI/6) rad = M_PI/2*rad/rad; 
-this->move(50+50*sin(rad), 50-50*sin(rad));*/ 

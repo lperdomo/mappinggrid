@@ -5,34 +5,34 @@
  
 #include <iostream> 
  
-SceneGridPoint::SceneGridPoint() 
+SceneGridBot::SceneGridBot()
 { 
 } 
  
-void SceneGridPoint::setXY(double x, double y) 
+void SceneGridBot::setXY(double x, double y)
 { 
     this->x = x; 
     this->y = y; 
 } 
  
-void SceneGridPoint::setTh(double th) 
+void SceneGridBot::setTh(double th)
 { 
-    this->th = th; 
+    this->th = th;
 } 
  
-double SceneGridPoint::getX() 
+double SceneGridBot::getX()
 { 
     return x; 
 } 
  
-double SceneGridPoint::getY() 
+double SceneGridBot::getY()
 { 
     return y; 
 } 
  
-double SceneGridPoint::getTh() 
+double SceneGridBot::getTh()
 { 
-    return th; 
+    return th*-1;
 } 
  
 SceneGridItem::SceneGridItem(OccupancyGrid *grid) : 
@@ -82,93 +82,104 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
 SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid) : 
     QGraphicsScene(x, y, width, height) 
 { 
-    observer = new SceneGridPoint(); 
+    bot = new SceneGridBot();
     gridItem = new SceneGridItem(grid); 
-    this->addItem(gridItem);     
+    //this->addItem(gridItem);
 } 
  
 SceneGrid::~SceneGrid() 
 { 
-    delete observer; 
+    delete bot;
     delete gridItem; 
 } 
  
 void SceneGrid::drawForeground(QPainter *painter, const QRectF &rect) 
 { 
-    double size = gridItem->grid->getCellSize(); 
-    qreal x, y; 
-    qreal left = int(rect.left()) - (int(rect.left()) % (int(size))); 
-    qreal top = int(rect.top()) - (int(rect.top()) % (int(size))); 
- 
-    double botx = round(observer->getX()/gridItem->grid->getCellScale()), 
-           boty = round(observer->getY()/gridItem->grid->getCellScale()), 
-           botth = observer->getTh()*-1; 
-    double limitx = (botx+125 > (gridItem->grid->getWidth()/2) ? (gridItem->grid->getWidth()/2)-botx : botx+125), 
-           limity = (botx+125 > (gridItem->grid->getHeight()/2) ? (gridItem->grid->getHeight()/2)-botx : botx+125), 
-           beginx = (limitx)*-1, 
-           beginy = (limity)*-1; 
- 
-    for (double x = beginx; x < limitx; x++) { 
-        for (double y = beginy; y < limity; y++) { 
-            double distance = sqrt(pow((x - limitx) - (botx - limitx), 2) + pow((limity - y) - (limity - boty), 2)); 
-            double angle = round(atan2((limity - y) - (limity - boty), (x - limitx) - (botx - limitx))*180/M_PI); 
- 
-            if (x == botx && y == boty) { 
-                painter->setBrush(QBrush(Qt::red)); 
-            } else if (distance <= 25) { 
-                //std::cout << "bot->getTh()" << bot->getTh() << std::endl; 
-                if (gridItem->grid->isAngleAtRange(botth+90, angle, 15)) { 
-                    painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth+50, angle, 15) && !gridItem->grid->isAngleAtRange(botth+30, angle, 10)) { 
-                    painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth+40, angle, 0.5)) { 
-                    painter->setBrush(QBrush(QColor(0, 0, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth+30, angle, 15) && !gridItem->grid->isAngleAtRange(botth+10, angle, 10)) { 
-                    painter->setBrush(QBrush(QColor(255, 0, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth+20, angle, 0.5)) { 
-                    painter->setBrush(QBrush(QColor(255, 0, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth+10, angle, 15) && !gridItem->grid->isAngleAtRange(botth-10, angle, 10)) { 
-                    painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth, angle, 0.5)) { 
-                    painter->setBrush(QBrush(QColor(0, 255, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-10, angle, 15) && !gridItem->grid->isAngleAtRange(botth-30, angle, 10)) { 
-                    painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-20, angle, 0.5)) { 
-                    painter->setBrush(QBrush(QColor(0, 0, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-30, angle, 15) && !gridItem->grid->isAngleAtRange(botth-50, angle, 10)) { 
-                    painter->setBrush(QBrush(QColor(255, 0, 255, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-40, angle, 0.5)) { 
-                    painter->setBrush(QBrush(QColor(255, 0, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-50, angle, 15)) { 
-                    painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                } else if (gridItem->grid->isAngleAtRange(botth-90, angle, 15)) { 
-                    painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                } else { 
-                    painter->setBrush(QBrush(Qt::white)); 
-                } 
-            } else { 
-                painter->setBrush(QBrush(Qt::white)); 
-            } 
-            painter->drawRect(size*x, size*y*-1, size, size); 
-        } 
-    } 
- 
- 
-    QVarLengthArray<QLineF, 100> lines; 
- 
-    painter->setPen(QPen(Qt::darkGray)); 
-    for (x = left; x < rect.right(); x += size) 
-        lines.append(QLineF(x, rect.top(), x, rect.bottom())); 
-    for (y = top; y < rect.bottom(); y += size) 
-        lines.append(QLineF(rect.left(), y, rect.right(), y)); 
- 
-    painter->drawLines(lines.data(), lines.size()); 
- 
-    painter->setPen(QPen(Qt::black)); 
-    painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom())); 
-    painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0)); 
+    drawBot(painter, rect);
+    drawGrid(painter, rect);
 } 
- 
+
+void SceneGrid::drawGrid(QPainter *painter, const QRectF &rect)
+{
+    double size = gridItem->grid->getCellSize();
+    qreal x, y;
+    qreal left = int(rect.left()) - (int(rect.left()) % (int(size)));
+    qreal top = int(rect.top()) - (int(rect.top()) % (int(size)));
+
+    QVarLengthArray<QLineF, 100> lines;
+
+    painter->setPen(QPen(Qt::darkGray));
+    for (x = left; x < rect.right(); x += size)
+        lines.append(QLineF(x, rect.top(), x, rect.bottom()));
+    for (y = top; y < rect.bottom(); y += size)
+        lines.append(QLineF(rect.left(), y, rect.right(), y));
+    painter->drawLines(lines.data(), lines.size());
+
+    painter->setPen(QPen(Qt::black));
+    painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom()));
+    painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
+}
+
+void SceneGrid::drawBot(QPainter *painter, const QRectF &rect)
+{
+    double size = gridItem->grid->getCellSize(),
+           scale = gridItem->grid->getCellScale(),
+           distanceLimit = 5*size;
+    double botx = round(bot->getX()/scale),
+           boty = round(bot->getY()/scale),
+           botth = bot->getTh(),
+           botWidth = (botx+distanceLimit > rect.right() ? rect.right() : botx+distanceLimit),
+           botHeight = (boty+distanceLimit > rect.bottom() ? rect.bottom() : boty+distanceLimit);
+
+    for (qreal x = botx-distanceLimit; x <= botWidth; x++) {
+        for (qreal y = boty-distanceLimit; y <= botHeight; y++) {
+            double distance = sqrt(pow((x - rect.right()) - (botx - rect.right()), 2)
+                                 + pow((rect.bottom() - y) - (rect.bottom() - boty), 2));
+            double angle = round(atan2((rect.bottom() - y) - (rect.bottom() - boty)
+                                     , (x - rect.right()) - (botx - rect.right()))*180/M_PI);
+            if (distance <= distanceLimit) {
+                if (x == botx && y == boty) {
+                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
+                    painter->setBrush(QBrush(Qt::red));
+                    painter->drawEllipse(5*(bot->getX()/scale), 5*(bot->getY()/scale)*-1, 3, 3);
+                } else if (Util::isAngleAtRange(botth+90, angle, 15))
+                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (Util::isAngleAtRange(botth+50, angle, 15) && !Util::isAngleAtRange(botth+30, angle, 10))
+                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (Util::isAngleAtRange(botth+40, angle, 0.5))
+                    drawColoredRect(painter, x, y, QColor(0, 0, 255, 127));
+                else if (Util::isAngleAtRange(botth+30, angle, 15) && !Util::isAngleAtRange(botth+10, angle, 10))
+                    drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (Util::isAngleAtRange(botth+20, angle, 0.5))
+                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
+                else if (Util::isAngleAtRange(botth+10, angle, 15) && !Util::isAngleAtRange(botth-10, angle, 10))
+                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (Util::isAngleAtRange(botth, angle, 0.5))
+                    drawColoredRect(painter, x, y, QColor(0, 255, 0, 127));
+                else if (Util::isAngleAtRange(botth-10, angle, 15) && !Util::isAngleAtRange(botth-30, angle, 10))
+                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (Util::isAngleAtRange(botth-20, angle, 0.5))
+                    drawColoredRect(painter, x, y, QColor(0, 0, 255, 127));
+                else if (Util::isAngleAtRange(botth-30, angle, 15) && !Util::isAngleAtRange(botth-50, angle, 10))
+                    drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (Util::isAngleAtRange(botth-40, angle, 0.5))
+                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
+                else if (Util::isAngleAtRange(botth-50, angle, 15))
+                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (Util::isAngleAtRange(botth-90, angle, 15))
+                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+            }
+        }
+    }
+}
+
+void SceneGrid::drawColoredRect(QPainter *painter, double x, double y, QColor color)
+{
+    double size = gridItem->grid->getCellSize();
+    painter->setBrush(QBrush(color));
+    painter->drawRect(size*x, size*y*-1, size, size);
+}
+
 void SceneGrid::keyPressEvent(QKeyEvent *event) 
 { 
     if (event->key() == Qt::Key_Up) { 

@@ -51,21 +51,13 @@ void OccupancyGrid::assign(double x, double y, double value)
     } else { 
         matrix[x][y]->setValue(value); 
     } 
-} 
- 
-bool OccupancyGrid::isAngleAtRange(double angle1, double angle2, double range) 
-{ 
-    int difference = angle1 - angle2; 
-    if (abs(difference % 360) <= range || 360 - abs(difference % 360) <= range) { 
-        return true; 
-    } 
-    return false; 
-} 
- 
+}
+
 OccupancyGridCell::OccupancyGridCell(double value) : 
     QObject() 
 { 
-    this->value = value; 
+    this->value = value;
+    bayes = new Bayes();
 } 
  
 void OccupancyGridCell::setValue(double value) 
@@ -77,23 +69,8 @@ double OccupancyGridCell::getValue()
 { 
     return value; 
 } 
- 
- 
-/** 
- * void CellMap::setProbabilidadeOcupada(double value) 
-{ 
-    if(value >0 && value <1.0) 
-    { 
-        pOcupada = value; 
-        pVazia = 1.0-pOcupada; 
-    } 
-} 
- 
-void CellMap::setProbabilidadeVazia(double value) 
-{ 
-    if(value >0 && value <1.0) 
-    { 
-        pVazia = value; 
-        pOcupada = 1.0-pVazia; 
-    } 
-}*/ 
+
+Bayes *OccupancyGridCell::getBayes()
+{
+    return bayes;
+}

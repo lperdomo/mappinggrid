@@ -43,8 +43,8 @@ void Controller::update()
  
 void Controller::updateBotOnGrid() 
 { 
-    scene->observer->setXY(bot->getX(), bot->getY()); 
-    scene->observer->setTh(bot->getTh()); 
+    scene->bot->setXY(bot->getX(), bot->getY());
+    scene->bot->setTh(bot->getTh());
 } 
  
 void Controller::showView() 

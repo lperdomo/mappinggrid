@@ -5,13 +5,14 @@
 #include <QGraphicsItem> 
 #include <QPainter> 
 #include <QKeyEvent> 
- 
+
 #include "occupancygrid.h" 
- 
-class SceneGridPoint 
+#include "util.h"
+
+class SceneGridBot
 { 
 public: 
-    SceneGridPoint(); 
+    SceneGridBot();
     void setXY(double x, double y); 
     void setTh(double th); 
     double getX(); 
@@ -39,9 +40,12 @@ class SceneGrid : public QGraphicsScene
 public: 
     SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid); 
     ~SceneGrid(); 
-    SceneGridPoint *observer; 
+    SceneGridBot *bot;
 private: 
     SceneGridItem *gridItem; 
+    void drawGrid(QPainter *painter, const QRectF &rect);
+    void drawBot(QPainter *painter, const QRectF &rect);
+    void drawColoredRect(QPainter *painter, double x, double y, QColor color);
 protected: 
     void drawForeground(QPainter *painter, const QRectF &rect); 
     void keyPressEvent(QKeyEvent *event); 
