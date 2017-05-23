@@ -87,7 +87,7 @@ void Bot::readingSonar()
     if (this->isConnected()) {
         this->lock();
         sonar->clear();
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i <= 7; i++)
             sonar->push_back(*this->getSonarReading(i));
         this->unlock();
     }
@@ -212,10 +212,10 @@ void Bot::correctWithPID(double pid)
  
 void Bot::move(double leftW, double rightW) 
 { 
-    this->lock(); 
+    this->readingSonar();
+    this->lock();
     this->setVel2(leftW, rightW); 
     this->moving();
-    this->readingSonar();
     this->unlock(); 
 } 
  

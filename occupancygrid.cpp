@@ -57,7 +57,7 @@ OccupancyGridCell::OccupancyGridCell(double value) :
     QObject() 
 { 
     this->value = value;
-    bayes = new Bayes();
+    bayes = new Bayes(0.5, 0.5);
 } 
  
 void OccupancyGridCell::setValue(double value) 

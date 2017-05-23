@@ -57,15 +57,33 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     for (double x = rect.left(); x < rect.width(); x++) { 
         for (double y = rect.top(); y < rect.height(); y++) { 
             if (grid->at(x, y)) { 
-                //double value = grid->at(x, y)->getValue();
-                double value = grid->at(x, y)->getBayes()->getOccupied();
+                double value = grid->at(x, y)->getValue();
+                //double value = grid->at(x, y)->getBayes()->getOccupied();
                 std::cout << value << std::endl;
-                painter->setBrush(QBrush(QColor(255, 255, 255)));
-                painter->drawRect(size*x, size*y*-1, size, size); 
+                painter->setPen(QPen(Qt::lightGray));
+                painter->setBrush(QBrush(Qt::white));
+                painter->drawRect(size*x, size*y*-1, size, size);
+
+                if (value == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (value == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (value == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (value == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (value == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (value == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (value == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (value == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
             } 
         } 
     } 
-} 
+}
+
+void SceneGridItem::drawColoredRect(QPainter *painter, double x, double y, QColor color)
+{
+    double size = grid->getCellSize();
+    painter->setPen(QPen(QColor(255, 255, 255, 1)));
+    painter->setBrush(QBrush(color));
+    painter->drawRect(size*x, size*y*-1, size, size);
+}
  
 SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid) : 
     QGraphicsScene(x, y, width, height) 
@@ -80,7 +98,14 @@ SceneGrid::~SceneGrid()
     delete bot;
     delete gridItem; 
 } 
- 
+
+void SceneGrid::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    //painter->setPen(QPen(Qt::lightGray));
+    //painter->setBrush(QBrush(Qt::lightGray));
+    //painter->drawRect(rect.left(), rect.top(), rect.right()*2, rect.bottom()*2);
+}
+
 void SceneGrid::drawForeground(QPainter *painter, const QRectF &rect) 
 { 
     drawBot(painter, rect);
@@ -94,14 +119,14 @@ void SceneGrid::drawGrid(QPainter *painter, const QRectF &rect)
     qreal left = int(rect.left()) - (int(rect.left()) % (int(size)));
     qreal top = int(rect.top()) - (int(rect.top()) % (int(size)));
 
-    QVarLengthArray<QLineF, 100> lines;
+    /*QVarLengthArray<QLineF, 100> lines;
 
     painter->setPen(QPen(Qt::darkGray));
     for (x = left; x < rect.right(); x += size)
         lines.append(QLineF(x, rect.top(), x, rect.bottom()));
     for (y = top; y < rect.bottom(); y += size)
         lines.append(QLineF(rect.left(), y, rect.right(), y));
-    painter->drawLines(lines.data(), lines.size());
+    painter->drawLines(lines.data(), lines.size());*/
 
     painter->setPen(QPen(Qt::black));
     painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom()));
@@ -110,7 +135,7 @@ void SceneGrid::drawGrid(QPainter *painter, const QRectF &rect)
 
 void SceneGrid::drawBot(QPainter *painter, const QRectF &rect)
 {
-    double size = gridItem->grid->getCellSize(),
+    /*double size = gridItem->grid->getCellSize(),
            scale = gridItem->grid->getCellScale(),
            distanceLimit = 5*size;
     double botx = round(bot->getX()/scale),
@@ -156,14 +181,7 @@ void SceneGrid::drawBot(QPainter *painter, const QRectF &rect)
                     drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
             }
         }
-    }
-}
-
-void SceneGrid::drawColoredRect(QPainter *painter, double x, double y, QColor color)
-{
-    double size = gridItem->grid->getCellSize();
-    painter->setBrush(QBrush(color));
-    painter->drawRect(size*x, size*y*-1, size, size);
+    }*/
 }
 
 void SceneGrid::keyPressEvent(QKeyEvent *event) 

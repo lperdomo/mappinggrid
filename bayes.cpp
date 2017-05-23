@@ -1,7 +1,9 @@
 #include "bayes.h"
 
-Bayes::Bayes()
+Bayes::Bayes(double empty, double occupied)
 {
+    this->empty = empty;
+    this->occupied = occupied;
 }
 
 void Bayes::setEmpty(double empty)

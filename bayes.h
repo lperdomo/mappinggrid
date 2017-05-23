@@ -4,7 +4,7 @@
 class Bayes
 {
 public:
-    Bayes();
+    Bayes(double empty, double occupied);
     void setEmpty(double empty);
     double getEmpty();
     void setOccupied(double occupied);

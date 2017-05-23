@@ -33,6 +33,8 @@ public:
     OccupancyGrid *grid; 
 protected: 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0); 
+private:
+    void drawColoredRect(QPainter *painter, double x, double y, QColor color);
 }; 
  
 class SceneGrid : public QGraphicsScene 
@@ -45,9 +47,9 @@ private:
     SceneGridItem *gridItem; 
     void drawGrid(QPainter *painter, const QRectF &rect);
     void drawBot(QPainter *painter, const QRectF &rect);
-    void drawColoredRect(QPainter *painter, double x, double y, QColor color);
 protected: 
-    void drawForeground(QPainter *painter, const QRectF &rect); 
+    void drawBackground(QPainter *painter, const QRectF &rect);
+    void drawForeground(QPainter *painter, const QRectF &rect);
     void keyPressEvent(QKeyEvent *event); 
     void keyReleaseEvent(QKeyEvent *event); 
 }; 
