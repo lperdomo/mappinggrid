@@ -22,9 +22,8 @@ Bot::~Bot()
 bool Bot::start() 
 { 
     Aria::init(); 
-    //parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002"); 
-    this->addRangeDevice(&sonar); 
-    this->addRangeDevice(&sick); 
+    //parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
+    this->addRangeDevice(&sick);
     botConn.parseArgs(); 
     if (!botConn.connectRobot()) { 
         ArLog::log(ArLog::Terse, "bot: failed to connect with"); 
@@ -35,8 +34,11 @@ bool Bot::start()
     if (!laserConn.connectLaser(&sick)) { 
         ArLog::log(ArLog::Terse, "sick: failed to connect with"); 
         return false; 
-    } 
- 
+    }
+
+    sonar = new vector<ArSensorReading>();
+    laser = new vector<ArSensorReading>();
+
     ArLog::log(ArLog::Normal,"bot: sucessfully connected"); 
     sick.runAsync(); 
     this->runAsync(true); 
@@ -63,23 +65,40 @@ void Bot::shutdown()
     Aria::shutdown(); 
 } 
  
-void Bot::readingSensors() 
+void Bot::readingLaser()
 { 
     if (this->isConnected() && sick.isConnected()) { 
+        this->lock();
         sick.lockDevice(); 
-        lasers = sick.getRawReadingsAsVector(); 
+        laser = sick.getRawReadingsAsVector();
         sick.unlockDevice(); 
+        this->unlock();
     } 
-} 
- 
-int Bot::getLaserRange(int angle) 
-{ 
-    if (!this->lasers || (this->lasers->size() <= angle)) { 
-        return 0; 
-    } 
-    return this->lasers->at(angle).getRange(); 
-} 
- 
+}
+
+vector<ArSensorReading> *Bot::getLaser()
+{
+    return laser;
+}
+
+
+void Bot::readingSonar()
+{
+    if (this->isConnected()) {
+        this->lock();
+        sonar->clear();
+        for (int i = 0; i < 7; i++)
+            sonar->push_back(*this->getSonarReading(i));
+        this->unlock();
+    }
+}
+
+vector<ArSensorReading> *Bot::getSonar()
+{
+    return sonar;
+}
+
+
 void Bot::doTeleOp() 
 { 
     if (!this->start()) { 
@@ -195,7 +214,8 @@ void Bot::move(double leftW, double rightW)
 { 
     this->lock(); 
     this->setVel2(leftW, rightW); 
-    this->moving(); 
+    this->moving();
+    this->readingSonar();
     this->unlock(); 
 } 
  

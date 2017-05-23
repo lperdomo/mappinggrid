@@ -57,22 +57,10 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     for (double x = rect.left(); x < rect.width(); x++) { 
         for (double y = rect.top(); y < rect.height(); y++) { 
             if (grid->at(x, y)) { 
-                double value = grid->at(x, y)->getValue(); 
-                if (value == 1) painter->setBrush(QBrush(Qt::red)); 
-                else if (value == 2) painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                else if (value == 3) painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                else if (value == 4) painter->setBrush(QBrush(QColor(0, 0, 255, 127))); 
-                else if (value == 5) painter->setBrush(QBrush(QColor(255, 0, 255, 127))); 
-                else if (value == 6) painter->setBrush(QBrush(QColor(255, 0, 0, 127))); 
-                else if (value == 7) painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                else if (value == 8) painter->setBrush(QBrush(QColor(0, 255, 0, 127))); 
-                else if (value == 9) painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                else if (value == 10) painter->setBrush(QBrush(QColor(0, 0, 255, 127))); 
-                else if (value == 11) painter->setBrush(QBrush(QColor(255, 0, 255, 127))); 
-                else if (value == 12) painter->setBrush(QBrush(QColor(255, 0, 0, 127))); 
-                else if (value == 13) painter->setBrush(QBrush(QColor(255, 255, 0, 127))); 
-                else if (value == 14) painter->setBrush(QBrush(QColor(0, 255, 255, 127))); 
-                else if (value == 0) painter->setBrush(QBrush(Qt::white)); 
+                //double value = grid->at(x, y)->getValue();
+                double value = grid->at(x, y)->getBayes()->getOccupied();
+                std::cout << value << std::endl;
+                painter->setBrush(QBrush(QColor(255, 255, 255)));
                 painter->drawRect(size*x, size*y*-1, size, size); 
             } 
         } 
@@ -84,7 +72,7 @@ SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid 
 { 
     bot = new SceneGridBot();
     gridItem = new SceneGridItem(grid); 
-    //this->addItem(gridItem);
+    this->addItem(gridItem);
 } 
  
 SceneGrid::~SceneGrid() 
@@ -138,11 +126,9 @@ void SceneGrid::drawBot(QPainter *painter, const QRectF &rect)
             double angle = round(atan2((rect.bottom() - y) - (rect.bottom() - boty)
                                      , (x - rect.right()) - (botx - rect.right()))*180/M_PI);
             if (distance <= distanceLimit) {
-                if (x == botx && y == boty) {
-                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
-                    painter->setBrush(QBrush(Qt::red));
-                    painter->drawEllipse(5*(bot->getX()/scale), 5*(bot->getY()/scale)*-1, 3, 3);
-                } else if (Util::isAngleAtRange(botth+90, angle, 15))
+                if (x == botx && y == boty)
+                    drawColoredRect(painter, x, y, Qt::red);
+                else if (Util::isAngleAtRange(botth+90, angle, 15))
                     drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
                 else if (Util::isAngleAtRange(botth+50, angle, 15) && !Util::isAngleAtRange(botth+30, angle, 10))
                     drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
@@ -205,92 +191,3 @@ void SceneGrid::keyReleaseEvent(QKeyEvent *event)
         Keyboard::getInstance()->setArrowRight(false); 
     } 
 } 
- 
-/** 
- * void Mapping::calculateMapBayes() 
-{ 
-    cout << "Calculando o mapa pelo metodo de Bayes" << endl; 
- 
-    float variacao = 100;//10 centimetros 
-    float pMax = 0.90; 
-    double aberturaSonar = 20.0; 
- 
-    for(int x=0; x<MAP_LENGTH_WORLD;x++) 
-    { 
-        for(int y=0; y<MAP_LENGTH_WORLD;y++) 
-        { 
-            double angle = round(atan2( 
-                                  ((float)MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange-yRobo, 
-                                  ((float)x + 0.5 - MAP_LENGTH_WORLD/2)*celRange-xRobo 
-                                  )*180/M_PI)-thRobo; 
-            float distance = sqrt( 
-                        pow( 
-                            (x + 0.5 - MAP_LENGTH_WORLD/2)*celRange - xRobo, 
-                            2 
-                            ) 
-                        +pow( 
-                            (MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange - yRobo, 
-                            2 
-                            ) 
-                        ); 
- 
-            if(angle < -180) 
-                angle += 360; 
-            if(angle > 180) 
-                angle -= 360; 
- 
-            for(int i =0;i<sonares->size();i++) 
-            { 
- 
-                float angleSensor = sonares->at(i).getSensorTh(); 
- 
-                if(fabs(angle-angleSensor) <= aberturaSonar/2) 
-                { 
-                    float reading = sonares->at(i).getRange(); 
-                    double pOcupada, pVazia; 
-                    pOcupada = pVazia = 0.5; 
- 
-                    if(reading > rangeMax) 
-                    { 
-                        reading = rangeMax; 
-                    } 
-                    if(reading + variacao < distance) 
-                    { 
-                        //cout << "Área desconhecida... " << endl; 
-                    } 
-                    else if(reading == rangeMax) 
-                    { 
-                        pVazia = pMax; 
-                        pOcupada = 1.0-pVazia; 
-                    } 
-                    else if(reading - variacao > distance) 
-                    { 
-                        //cout << "Área vaga... " << endl; 
-                        pVazia = 0.5*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar); 
-                        pVazia = max(pVazia, 1.0-pMax); 
-                        pOcupada = 1.0 - pVazia; 
- 
-                    } 
-                    else if((reading - variacao <= distance) && (reading + variacao >= distance)) 
-                    { 
-                        //cout << "Parede... " << endl; 
-                        pOcupada = 0.5*pMax*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar); 
-                        //pVazia = max(pOcupada, 1.0-pMax); 
-                        pVazia = 1.0 - pOcupada; 
- 
-                    } 
-                    mapCell[x][y].setProbabilidadeOcupada( 
-                                pOcupada*mapCell[x][y].probabilidadeOcupada() 
-                                / 
-                                (pOcupada*mapCell[x][y].probabilidadeOcupada() + pVazia*mapCell[x][y].probabilidadeVazia()) 
-                                ); 
- 
-                    if(mapCell[x][y].probabilidadeVazia() == 0.0) 
-                        cout << "ZERO!!!!" << endl; 
-                    break; 
-                } 
-            } 
-        } 
-    } 
- 
-}*/ 

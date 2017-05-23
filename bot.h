@@ -17,17 +17,19 @@ public:
     bool start(); 
     void shutdown(); 
     void stop(); 
-    void readingSensors(); 
-    int getLaserRange(int angle); 
-    void move(double leftW, double rightW); 
+    void readingLaser();
+    void readingSonar();
+    vector<ArSensorReading> *getSonar();
+    vector<ArSensorReading> *getLaser();
+    void move(double leftW, double rightW);
     double getVelForward(); 
 private: 
     ArRobotConnector botConn; 
     ArArgumentParser parser; 
     ArSick sick; 
-    ArLaserConnector laserConn; 
-    ArSonarDevice sonar; 
-    vector<ArSensorReading> *lasers = NULL; 
+    ArLaserConnector laserConn;
+    vector<ArSensorReading> *sonar;
+    vector<ArSensorReading> *laser;
     double velForward; 
 signals: 
     void moving(); 
