@@ -27,10 +27,10 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     for (double x = rect.left(); x < rect.width(); x++) { 
         for (double y = rect.top(); y < rect.height(); y++) { 
             if (grid->at(x, y)) { 
-                //double value = grid->at(x, y)->getBayes()->getOccupied();
-                //std::cout << sensorId << std::endl;
+                double occupied = grid->at(x, y)->getBayes()->getOccupied();
+                //std::cout << "PINTANDO occupied" << occupied << std::endl;
                 painter->setPen(QPen(Qt::lightGray));
-                painter->setBrush(QBrush(Qt::white));
+                painter->setBrush(QBrush(QColor(255-(255*occupied), 255-(255*occupied), 255-(255*occupied))));
                 painter->drawRect(size*x, size*y*-1, size, size);
 
                 double sensorId = grid->at(x, y)->getSensorId();

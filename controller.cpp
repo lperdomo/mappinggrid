@@ -45,49 +45,81 @@ void Controller::updateOccupancyGrid()
 {
     double size = grid->getCellSize(),
            scale = grid->getCellScale(),
-           rangeMax = 5000/scale;
+           rangeMax = 5000,
+           rangeA = 2000,
+           rangeB = rangeA+500,
+           distanceLimit = rangeMax/scale;
     double botx = round(bot->getX()/scale),
            boty = round(bot->getY()/scale),
            botth = bot->getTh(),
-           botWidth = (botx+rangeMax > grid->getWidth()/2 ? grid->getWidth()/2 : botx+rangeMax),
-           botHeight = (boty+rangeMax > grid->getHeight()/2 ? grid->getHeight()/2 : boty+rangeMax);
+           botWidth = (botx+distanceLimit > grid->getWidth()/2 ? grid->getWidth()/2 : botx+distanceLimit),
+           botHeight = (boty+distanceLimit > grid->getHeight()/2 ? grid->getHeight()/2 : boty+distanceLimit);
 
-    double probMax = 0.9,
+    double probMax = 0.9999,
+           probMin = 0.0001,
+           probRangeB = 2,
            variance = 100;
 
-    for (double x = botx-rangeMax-1; x <= botWidth+1; x++) {
-        for (double y = boty-rangeMax-1; y <= botHeight+1; y++) {
+    for (double x = botx-distanceLimit-1; x <= botWidth+1; x++) {
+        for (double y = boty-distanceLimit-1; y <= botHeight+1; y++) {
 
             double distance = sqrt(pow((x - botWidth) - (botx - botWidth), 2)
                                  + pow((botHeight - y) - (botHeight - boty), 2));
-            double angle = round(atan2((botHeight - y) - (botHeight - boty)
-                                     , (x - botWidth) - (botx - botWidth))*180/M_PI);//+botth
+            double angle = atan2((botHeight - y) - (botHeight - boty)
+                                     , (x - botWidth) - (botx - botWidth))*180/M_PI;//+botth
 
             if (x == botx && y == boty) {
                 grid->assign(x, y, 0);
-            } else if (distance <= rangeMax) {
+            } else if (distance <= distanceLimit) {
                 bool inRange = false;
                 for (int i = 0; (i < bot->getSonar()->size() && inRange == false); i++) {
                     if (bot->isCloseToSonarRange(angle, i)) {
-                        double angleSonar = bot->getSonar()->at(i).getSensorTh(),
+                        double angleSonar = bot->getSonar()->at(i).getSensorTh()*-1,
                                range = bot->getSonar()->at(i).getRange(),
-                               empty = 0.5,
-                               occupied = 0.5;
-                        if (range == rangeMax) {
+                               empty,
+                               occupied;
+                        std::cout << "i" << i << " range" << range << " rangeMax" << rangeMax << std::endl;
+                        //std::cout << "angle" << angle << " distance" << distance << std::endl;
+                        if (range <= rangeA) {
+                            //std::cout << "range <= rangeA" << std::endl;
+                            empty = 0.5*((rangeMax-range)/(rangeMax) + (15-angle/15));
+                            occupied = 1-empty;
+                        } else if (range >= rangeA && range <= rangeB) {
+                            //std::cout << "range >= rangeA && range <= rangeB" << std::endl;
+                            occupied = 0.5*((rangeMax-range)/(rangeMax) + (15-angle/15));
+                            empty = 1-occupied;
+                        } else {
+                            //std::cout << "range > rangeA" << std::endl;
                             empty = probMax;
                             occupied = 1-empty;
-                        } else if (range - variance > distance) {
-                            empty = max(0.5*((2*rangeMax-distance)/(2*rangeMax) + (15-fabs(angle-angleSonar))/15), 1-probMax);
-                            occupied = 1-empty;
-                        } else if (range - variance <= distance && range + variance >= distance) {
-                            occupied = (max(0.5*((2*rangeMax-distance)/(2*rangeMax) + (15-fabs(angle-angleSonar))/15), 1-probMax));
-                            empty = 1-occupied;
                         }
+                            //occupied = 1-empty;
+                        //} else if (range - variance <= distance && range + variance >= distance) {
+                            //occupied = (max(0.5*((2*rangeMax-distance)/(2*rangeMax) + (15-fabs(angle-angleSonar))/15), 1-probMax));
+                            //empty = 1-occupied;
+                        //}
                         grid->assign(x, y, i+1);
                         occupied = occupied*grid->at(x, y)->getBayes()->getOccupied()
-                                /(grid->at(x, y)->getBayes()->getOccupied()
+                                /(occupied*grid->at(x, y)->getBayes()->getOccupied()
                                   + empty*grid->at(x, y)->getBayes()->getEmpty());
+                        empty = 1-occupied;
+                        if (occupied > probMax) occupied = probMax;
+                        else if (occupied < probMin) occupied = probMin;
+                        if (empty > probMax) empty = probMax;
+                        else if (empty < probMin) empty = probMin;
+
+                        if (occupied > 0.5) {
+                            std::cout << "occupied" << occupied << std::endl;
+                            std::cout << "prevoccupied" << grid->at(x, y)->getBayes()->getOccupied() << std::endl;
+                            std::cout << "empty" << empty << std::endl;
+                            std::cout << "prevempty" << grid->at(x, y)->getBayes()->getEmpty() << std::endl;
+
+                        }
                         grid->at(x, y)->getBayes()->setOccupied(occupied);
+                        //std::cout << "TESTE" << grid->at(x, y)->getBayes()->getOccupied() << std::endl;
+                        //        /(grid->at(x, y)->getBayes()->getOccupied()
+                        //          + empty*grid->at(x, y)->getBayes()->getEmpty());
+                        //grid->at(x, y)->getBayes()->setOccupied(occupied);
                         inRange = true;
                     }
                 }

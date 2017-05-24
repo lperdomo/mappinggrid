@@ -15,10 +15,10 @@ public:
     double getSensorId();
     double getValue(); 
     Bayes *getBayes();
-private: 
+private:
     double sensorId;
     Bayes *bayes;
-}; 
+};
  
 class OccupancyGrid : public QObject 
 { 

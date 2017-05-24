@@ -58,7 +58,7 @@ OccupancyGridCell::OccupancyGridCell(double sensorId) :
 { 
     this->sensorId = sensorId;
     bayes = new Bayes(0.5, 0.5);
-} 
+}
  
 void OccupancyGridCell::setSensorId(double sensorId)
 { 
@@ -68,7 +68,7 @@ void OccupancyGridCell::setSensorId(double sensorId)
 double OccupancyGridCell::getSensorId()
 { 
     return sensorId;
-} 
+}
 
 Bayes *OccupancyGridCell::getBayes()
 {
