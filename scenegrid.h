@@ -8,21 +8,6 @@
 
 #include "occupancygrid.h" 
 #include "util.h"
-
-class SceneGridBot
-{ 
-public: 
-    SceneGridBot();
-    void setXY(double x, double y); 
-    void setTh(double th); 
-    double getX(); 
-    double getY(); 
-    double getTh(); 
-private: 
-    double x; 
-    double y; 
-    double th; 
-}; 
  
 class SceneGridItem : public QGraphicsItem 
 { 
@@ -42,7 +27,6 @@ class SceneGrid : public QGraphicsScene
 public: 
     SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid); 
     ~SceneGrid(); 
-    SceneGridBot *bot;
 private: 
     SceneGridItem *gridItem; 
     void drawGrid(QPainter *painter, const QRectF &rect);

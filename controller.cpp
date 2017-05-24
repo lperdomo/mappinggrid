@@ -38,14 +38,7 @@ void Controller::run()
 void Controller::update() 
 {
     this->updateOccupancyGrid();
-    this->updateBotOnScene();
     this->showView(); 
-} 
- 
-void Controller::updateBotOnScene()
-{ 
-    scene->bot->setXY(bot->getX(), bot->getY());
-    scene->bot->setTh(bot->getTh());
 } 
  
 void Controller::updateOccupancyGrid()
@@ -62,25 +55,22 @@ void Controller::updateOccupancyGrid()
     double probMax = 0.9,
            variance = 100;
 
-    for (double x = botx-rangeMax; x <= botWidth; x++) {
-        for (double y = boty-rangeMax; y <= botHeight; y++) {
+    for (double x = botx-rangeMax-1; x <= botWidth+1; x++) {
+        for (double y = boty-rangeMax-1; y <= botHeight+1; y++) {
 
             double distance = sqrt(pow((x - botWidth) - (botx - botWidth), 2)
                                  + pow((botHeight - y) - (botHeight - boty), 2));
             double angle = round(atan2((botHeight - y) - (botHeight - boty)
-                                     , (x - botWidth) - (botx - botWidth))*180/M_PI)+botth;
+                                     , (x - botWidth) - (botx - botWidth))*180/M_PI);//+botth
 
-            /*if(angle < -180)
-                angle += 360;
-            if(angle > 180)
-                angle -= 360;*/
-
-            for (int i = 0; i < bot->getSonar()->size(); i++) {
-                double angleSonar = bot->getSonar()->at(i).getSensorTh();
-                //std::cout << "angleSonar" << angleSonar << std::endl;
-                if (distance <= rangeMax) {
-                    if (Util::isAngleAtRange(angle, angleSonar, 15)) {
-                        double range = bot->getSonar()->at(i).getRange(),
+            if (x == botx && y == boty) {
+                grid->assign(x, y, 0);
+            } else if (distance <= rangeMax) {
+                bool inRange = false;
+                for (int i = 0; (i < bot->getSonar()->size() && inRange == false); i++) {
+                    if (bot->isCloseToSonarRange(angle, i)) {
+                        double angleSonar = bot->getSonar()->at(i).getSensorTh(),
+                               range = bot->getSonar()->at(i).getRange(),
                                empty = 0.5,
                                occupied = 0.5;
                         if (range == rangeMax) {
@@ -98,11 +88,11 @@ void Controller::updateOccupancyGrid()
                                 /(grid->at(x, y)->getBayes()->getOccupied()
                                   + empty*grid->at(x, y)->getBayes()->getEmpty());
                         grid->at(x, y)->getBayes()->setOccupied(occupied);
+                        inRange = true;
                     }
-                } else {
-                    grid->assign(x, y, 0);
                 }
-            }
+                if (inRange == false && grid->at(x, y)) grid->assign(x, y, -1);
+            } else if (grid->at(x, y)) grid->assign(x, y, -1);
         }
     }
 }

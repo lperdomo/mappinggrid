@@ -5,36 +5,6 @@
  
 #include <iostream> 
  
-SceneGridBot::SceneGridBot()
-{ 
-} 
- 
-void SceneGridBot::setXY(double x, double y)
-{ 
-    this->x = x; 
-    this->y = y; 
-} 
- 
-void SceneGridBot::setTh(double th)
-{ 
-    this->th = th;
-} 
- 
-double SceneGridBot::getX()
-{ 
-    return x; 
-} 
- 
-double SceneGridBot::getY()
-{ 
-    return y; 
-} 
- 
-double SceneGridBot::getTh()
-{ 
-    return th*-1;
-} 
- 
 SceneGridItem::SceneGridItem(OccupancyGrid *grid) : 
     QGraphicsItem() 
 { 
@@ -57,21 +27,22 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     for (double x = rect.left(); x < rect.width(); x++) { 
         for (double y = rect.top(); y < rect.height(); y++) { 
             if (grid->at(x, y)) { 
-                double value = grid->at(x, y)->getValue();
                 //double value = grid->at(x, y)->getBayes()->getOccupied();
-                std::cout << value << std::endl;
+                //std::cout << sensorId << std::endl;
                 painter->setPen(QPen(Qt::lightGray));
                 painter->setBrush(QBrush(Qt::white));
                 painter->drawRect(size*x, size*y*-1, size, size);
 
-                if (value == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (value == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (value == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (value == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (value == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (value == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (value == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (value == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                double sensorId = grid->at(x, y)->getSensorId();
+                if (sensorId == 0) drawColoredRect(painter, x, y, Qt::red);
+                else if (sensorId == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (sensorId == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (sensorId == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (sensorId == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (sensorId == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
+                else if (sensorId == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
+                else if (sensorId == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
+                else if (sensorId == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
             } 
         } 
     } 
@@ -88,14 +59,12 @@ void SceneGridItem::drawColoredRect(QPainter *painter, double x, double y, QColo
 SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid) : 
     QGraphicsScene(x, y, width, height) 
 { 
-    bot = new SceneGridBot();
     gridItem = new SceneGridItem(grid); 
     this->addItem(gridItem);
 } 
  
 SceneGrid::~SceneGrid() 
 { 
-    delete bot;
     delete gridItem; 
 } 
 
@@ -108,8 +77,11 @@ void SceneGrid::drawBackground(QPainter *painter, const QRectF &rect)
 
 void SceneGrid::drawForeground(QPainter *painter, const QRectF &rect) 
 { 
-    drawBot(painter, rect);
-    drawGrid(painter, rect);
+    painter->setPen(QPen(Qt::black));
+    painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom()));
+    painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
+    //drawBot(painter, rect);
+    //drawGrid(painter, rect);
 } 
 
 void SceneGrid::drawGrid(QPainter *painter, const QRectF &rect)

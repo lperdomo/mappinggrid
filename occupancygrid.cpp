@@ -42,32 +42,32 @@ OccupancyGridCell *OccupancyGrid::at(double x, double y)
     return matrix[x][y]; 
 } 
  
-void OccupancyGrid::assign(double x, double y, double value) 
+void OccupancyGrid::assign(double x, double y, double sensorId)
 { 
     x = x + (width/2); 
     y = (height/2) - y; 
     if (!matrix[x][y]) { 
-        matrix[x][y] = new OccupancyGridCell(value); 
+        matrix[x][y] = new OccupancyGridCell(sensorId);
     } else { 
-        matrix[x][y]->setValue(value); 
+        matrix[x][y]->setSensorId(sensorId);
     } 
 }
 
-OccupancyGridCell::OccupancyGridCell(double value) : 
+OccupancyGridCell::OccupancyGridCell(double sensorId) :
     QObject() 
 { 
-    this->value = value;
+    this->sensorId = sensorId;
     bayes = new Bayes(0.5, 0.5);
 } 
  
-void OccupancyGridCell::setValue(double value) 
+void OccupancyGridCell::setSensorId(double sensorId)
 { 
-    this->value = value; 
+    this->sensorId = sensorId;
 } 
  
-double OccupancyGridCell::getValue() 
+double OccupancyGridCell::getSensorId()
 { 
-    return value; 
+    return sensorId;
 } 
 
 Bayes *OccupancyGridCell::getBayes()

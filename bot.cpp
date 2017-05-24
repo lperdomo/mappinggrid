@@ -98,6 +98,20 @@ vector<ArSensorReading> *Bot::getSonar()
     return sonar;
 }
 
+bool Bot::isCloseToSonarRange(double angle, int sonarId)
+{
+    double botTh = this->getTh()*-1;
+    double angleSonar = this->getSonar()->at(sonarId).getSensorTh();
+    if (sonarId == 0 || sonarId == 7) {
+        return Util::isAngleAtRange(botTh+angleSonar, angle, 15);
+    } else if (sonarId >= 1 && sonarId <= 6) {
+        return (Util::isAngleAtRange(botTh+angleSonar, angle, 15)
+                && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId+1).getSensorTh(), angle, 10)
+                && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId-1).getSensorTh(), angle, 10));
+    }
+    return false;
+}
+
 
 void Bot::doTeleOp() 
 { 

@@ -6,7 +6,7 @@
 using namespace std; 
  
 #include "Aria.h" 
- 
+#include "util.h"
  
 class Bot : public QObject, public ArRobot 
 { 
@@ -23,6 +23,7 @@ public:
     vector<ArSensorReading> *getLaser();
     void move(double leftW, double rightW);
     double getVelForward(); 
+    bool isCloseToSonarRange(double angle, int sonarId);
 private: 
     ArRobotConnector botConn; 
     ArArgumentParser parser; 

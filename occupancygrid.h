@@ -11,11 +11,12 @@ class OccupancyGridCell : public QObject
     Q_OBJECT 
 public: 
     explicit OccupancyGridCell(double value); 
-    void setValue(double value); 
+    void setSensorId(double value);
+    double getSensorId();
     double getValue(); 
     Bayes *getBayes();
 private: 
-    double value;
+    double sensorId;
     Bayes *bayes;
 }; 
  
@@ -30,7 +31,7 @@ public:
     double getCellSize(); 
     double getCellScale(); 
     OccupancyGridCell *at(double x, double y); 
-    void assign(double x, double y, double value); 
+    void assign(double x, double y, double sensorId);
 private: 
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 
