@@ -101,13 +101,13 @@ vector<ArSensorReading> *Bot::getSonar()
 bool Bot::isCloseToSonarRange(double angle, int sonarId)
 {
     double botTh = this->getTh()*-1;
-    double angleSonar = this->getSonar()->at(sonarId).getSensorTh();
+    double angleSonar = this->getSonar()->at(sonarId).getSensorTh()*-1;
     if (sonarId == 0 || sonarId == 7) {
         return Util::isAngleAtRange(botTh+angleSonar, angle, 15);
     } else if (sonarId >= 1 && sonarId <= 6) {
         if (Util::isAngleAtRange(botTh+angleSonar, angle, 15)
-            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId+1).getSensorTh(), angle, 10)
-            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId-1).getSensorTh(), angle, 10)) {
+            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId+1).getSensorTh()*-1, angle, 10)
+            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId-1).getSensorTh()*-1, angle, 10)) {
             return true;
         } else if (Util::isAngleAtRange(botTh+angleSonar+10, angle, 0.5)) {
             return true;

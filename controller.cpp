@@ -58,7 +58,7 @@ void Controller::updateOccupancyGrid()
     double probMax = 0.9999,
            probMin = 0.0001,
            probRangeB = 2,
-           variance = 100;
+           tolerance = 200;
 
     for (double x = botx-distanceLimit-1; x <= botWidth+1; x++) {
         for (double y = boty-distanceLimit-1; y <= botHeight+1; y++) {
@@ -80,14 +80,15 @@ void Controller::updateOccupancyGrid()
                                occupied;
                         std::cout << "i" << i << " range" << range << " rangeMax" << rangeMax << std::endl;
                         //std::cout << "angle" << angle << " distance" << distance << std::endl;
-                        if (range <= rangeA) {
-                            //std::cout << "range <= rangeA" << std::endl;
-                            empty = 0.5*((rangeMax-range)/(rangeMax) + (15-angle/15));
-                            occupied = 1-empty;
-                        } else if (range >= rangeA && range <= rangeB) {
+                        if (range >= rangeA-tolerance && range <= rangeB+tolerance) {
                             //std::cout << "range >= rangeA && range <= rangeB" << std::endl;
-                            occupied = 0.5*((rangeMax-range)/(rangeMax) + (15-angle/15));
+                            occupied = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
                             empty = 1-occupied;
+                        } else if (range < rangeA) {
+                            //std::cout << "range <= rangeA" << std::endl;
+                            empty = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15));
+                            empty = (empty > 1 ? 1 : empty);
+                            occupied = 1-empty;
                         } else {
                             //std::cout << "range > rangeA" << std::endl;
                             empty = probMax;
@@ -103,10 +104,10 @@ void Controller::updateOccupancyGrid()
                                 /(occupied*grid->at(x, y)->getBayes()->getOccupied()
                                   + empty*grid->at(x, y)->getBayes()->getEmpty());
                         empty = 1-occupied;
-                        if (occupied > probMax) occupied = probMax;
+                        /*if (occupied > probMax) occupied = probMax;
                         else if (occupied < probMin) occupied = probMin;
                         if (empty > probMax) empty = probMax;
-                        else if (empty < probMin) empty = probMin;
+                        else if (empty < probMin) empty = probMin;*/
 
                         if (occupied > 0.5) {
                             std::cout << "occupied" << occupied << std::endl;
