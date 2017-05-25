@@ -47,7 +47,7 @@ void Controller::updateOccupancyGrid()
            scale = grid->getCellScale(),
            rangeMax = 5000,
            rangeA = 2000,
-           rangeB = rangeA+500,
+           rangeB = rangeA+1000,
            distanceLimit = rangeMax/scale;
     double botx = round(bot->getX()/scale),
            boty = round(bot->getY()/scale),
@@ -78,45 +78,86 @@ void Controller::updateOccupancyGrid()
                                range = bot->getSonar()->at(i).getRange(),
                                empty,
                                occupied;
-                        std::cout << "i" << i << " range" << range << " rangeMax" << rangeMax << std::endl;
                         //std::cout << "angle" << angle << " distance" << distance << std::endl;
-                        if (range >= rangeA-tolerance && range <= rangeB+tolerance) {
-                            //std::cout << "range >= rangeA && range <= rangeB" << std::endl;
+                        /*if (range/scale >= (rangeA-tolerance)/scale && range/scale <= (rangeB+tolerance)/scale) {
+                            std::cout << "range >= rangeA && range <= rangeB" << std::endl;
                             occupied = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
                             empty = 1-occupied;
-                        } else if (range < rangeA) {
+                        if (range/scale < rangeA/scale) {
                             //std::cout << "range <= rangeA" << std::endl;
                             empty = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15));
                             empty = (empty > 1 ? 1 : empty);
-                            occupied = 1-empty;
-                        } else {
+                            occupied = 1-empty;*/
+                        //if (distance) {
+                        //    std::cout << "i" << i << " range" << range << "range/scale" << range/scale << " distance" << distance << std::endl;
+                        //    empty = 0.5;
+                        //    occupied = 1-empty;
+                        //} else if ((range-tolerance)/scale > distance) {
+                        //    empty = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15));
+                        //    empty = (empty > 1 ? 1 : empty);
+                        //    occupied = 1-empty;
+                        //} else if ((range-tolerance)/scale <= distance && (range+tolerance)/scale >= distance) {
+                        //    occupied = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
+                        //    empty = 1-occupied;
+                        //} else {
                             //std::cout << "range > rangeA" << std::endl;
-                            empty = probMax;
-                            occupied = 1-empty;
-                        }
+                            //empty = probMax;
+                            //occupied = 1-empty;
+                        //}
                             //occupied = 1-empty;
                         //} else if (range - variance <= distance && range + variance >= distance) {
                             //occupied = (max(0.5*((2*rangeMax-distance)/(2*rangeMax) + (15-fabs(angle-angleSonar))/15), 1-probMax));
                             //empty = 1-occupied;
                         //}
-                        grid->assign(x, y, i+1);
+                        empty = probMax;
+                        occupied = 1-empty;
+                        bool teste = false;
+                        if (distance >= (rangeA-tolerance)/scale && distance <= (rangeB-tolerance)/scale) {
+                            grid->assign(x, y, i+1);
+                            if (range/scale >= (rangeA-tolerance)/scale && range/scale <= (rangeB+tolerance)/scale) {
+                                occupied = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
+                                empty = 1-occupied;
+                                teste = true;
+                                occupied = 0.9;
+                                empty = 1-occupied;
+                            }
+                        } else if (distance < rangeA/scale) {
+                            grid->assign(x, y, i+1.5);
+                            //std::cout << "range" << range << " distance" << distance << " range/scale" << range/scale << " rangeA/scale" << rangeA/scale << std::endl;
+                            /*if (range/scale < rangeA/scale) {
+                                empty = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
+                                empty = (empty > 1 ? 1 : empty);
+                                occupied = 1-empty;
+                            } else {
+                                empty = probMax;
+                                occupied = 1-empty;
+                            }*/
+                        } else {
+                            grid->assign(x, y, i+1.5);
+                            //empty = probMax;
+                            //occupied = 1-empty;
+                        }
                         occupied = occupied*grid->at(x, y)->getBayes()->getOccupied()
                                 /(occupied*grid->at(x, y)->getBayes()->getOccupied()
                                   + empty*grid->at(x, y)->getBayes()->getEmpty());
-                        empty = 1-occupied;
-                        /*if (occupied > probMax) occupied = probMax;
+                        if (occupied > probMax) occupied = probMax;
                         else if (occupied < probMin) occupied = probMin;
                         if (empty > probMax) empty = probMax;
-                        else if (empty < probMin) empty = probMin;*/
+                        else if (empty < probMin) empty = probMin;
+                        empty = 1-occupied;
+                        if (teste == true) std::cout << "result occupied=" << occupied << " empty" << empty << std::endl;
 
-                        if (occupied > 0.5) {
+
+                        /*if (occupied > 0.5) {
                             std::cout << "occupied" << occupied << std::endl;
                             std::cout << "prevoccupied" << grid->at(x, y)->getBayes()->getOccupied() << std::endl;
                             std::cout << "empty" << empty << std::endl;
                             std::cout << "prevempty" << grid->at(x, y)->getBayes()->getEmpty() << std::endl;
 
+                        }*/
+                        if (grid->at(x, y)->getBayes()->isTimeToScanAgain()) {
+                            grid->at(x, y)->getBayes()->setOccupied(occupied);
                         }
-                        grid->at(x, y)->getBayes()->setOccupied(occupied);
                         //std::cout << "TESTE" << grid->at(x, y)->getBayes()->getOccupied() << std::endl;
                         //        /(grid->at(x, y)->getBayes()->getOccupied()
                         //          + empty*grid->at(x, y)->getBayes()->getEmpty());

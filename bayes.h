@@ -1,6 +1,10 @@
 #ifndef BAYES_H
 #define BAYES_H
 
+#include <QTime>
+
+#include <iostream>
+
 class Bayes
 {
 public:
@@ -9,9 +13,11 @@ public:
     double getEmpty();
     void setOccupied(double occupied);
     double getOccupied();
+    bool isTimeToScanAgain();
 private:
     double empty;
     double occupied;
+    QTime *scanTime;
 };
 
 #endif // BAYES_H

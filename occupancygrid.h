@@ -13,7 +13,7 @@ public:
     explicit OccupancyGridCell(double value); 
     void setSensorId(double value);
     double getSensorId();
-    double getValue(); 
+    double getValue();
     Bayes *getBayes();
 private:
     double sensorId;

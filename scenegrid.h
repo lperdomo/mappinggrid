@@ -30,9 +30,7 @@ public:
 private: 
     SceneGridItem *gridItem; 
     void drawGrid(QPainter *painter, const QRectF &rect);
-    void drawBot(QPainter *painter, const QRectF &rect);
 protected: 
-    void drawBackground(QPainter *painter, const QRectF &rect);
     void drawForeground(QPainter *painter, const QRectF &rect);
     void keyPressEvent(QKeyEvent *event); 
     void keyReleaseEvent(QKeyEvent *event); 

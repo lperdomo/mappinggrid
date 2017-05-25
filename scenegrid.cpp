@@ -30,20 +30,28 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                 double occupied = grid->at(x, y)->getBayes()->getOccupied();
                 //std::cout << "PINTANDO occupied" << occupied << std::endl;
                 painter->setPen(QPen(Qt::lightGray));
-                painter->setBrush(QBrush(QColor(255-(255*occupied), 255-(255*occupied), 255-(255*occupied))));
+                painter->setBrush(QBrush(QColor(255-(255*occupied), 255-(255*occupied), 255-(255*occupied), 255*occupied)));
                 painter->drawRect(size*x, size*y*-1, size, size);
 
                 double sensorId = grid->at(x, y)->getSensorId();
                 if (sensorId == 0) drawColoredRect(painter, x, y, Qt::red);
-                else if (sensorId == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (sensorId == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (sensorId == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (sensorId == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (sensorId == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (sensorId == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (sensorId == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (sensorId == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-            } 
+                else if (sensorId == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 95));
+                else if (sensorId == 1.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 95));
+                else if (sensorId == 2.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+                else if (sensorId == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 95));
+                else if (sensorId == 3.5) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
+                else if (sensorId == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 95));
+                else if (sensorId == 4.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 95));
+                else if (sensorId == 5.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+                else if (sensorId == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 95));
+                else if (sensorId == 6.5) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
+                else if (sensorId == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 95));
+                else if (sensorId == 7.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 95));
+                else if (sensorId == 8.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+            }
         } 
     } 
 }
@@ -68,92 +76,18 @@ SceneGrid::~SceneGrid()
     delete gridItem; 
 } 
 
-void SceneGrid::drawBackground(QPainter *painter, const QRectF &rect)
-{
-    //painter->setPen(QPen(Qt::lightGray));
-    //painter->setBrush(QBrush(Qt::lightGray));
-    //painter->drawRect(rect.left(), rect.top(), rect.right()*2, rect.bottom()*2);
-}
-
 void SceneGrid::drawForeground(QPainter *painter, const QRectF &rect) 
 { 
     painter->setPen(QPen(Qt::black));
     painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom()));
     painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-    //drawBot(painter, rect);
-    //drawGrid(painter, rect);
 } 
 
 void SceneGrid::drawGrid(QPainter *painter, const QRectF &rect)
-{
-    double size = gridItem->grid->getCellSize();
-    qreal x, y;
-    qreal left = int(rect.left()) - (int(rect.left()) % (int(size)));
-    qreal top = int(rect.top()) - (int(rect.top()) % (int(size)));
-
-    /*QVarLengthArray<QLineF, 100> lines;
-
-    painter->setPen(QPen(Qt::darkGray));
-    for (x = left; x < rect.right(); x += size)
-        lines.append(QLineF(x, rect.top(), x, rect.bottom()));
-    for (y = top; y < rect.bottom(); y += size)
-        lines.append(QLineF(rect.left(), y, rect.right(), y));
-    painter->drawLines(lines.data(), lines.size());*/
-
+{   
     painter->setPen(QPen(Qt::black));
     painter->drawLine(QLineF(0, rect.top(), 0, rect.bottom()));
     painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-}
-
-void SceneGrid::drawBot(QPainter *painter, const QRectF &rect)
-{
-    /*double size = gridItem->grid->getCellSize(),
-           scale = gridItem->grid->getCellScale(),
-           distanceLimit = 5*size;
-    double botx = round(bot->getX()/scale),
-           boty = round(bot->getY()/scale),
-           botth = bot->getTh(),
-           botWidth = (botx+distanceLimit > rect.right() ? rect.right() : botx+distanceLimit),
-           botHeight = (boty+distanceLimit > rect.bottom() ? rect.bottom() : boty+distanceLimit);
-
-    for (qreal x = botx-distanceLimit; x <= botWidth; x++) {
-        for (qreal y = boty-distanceLimit; y <= botHeight; y++) {
-            double distance = sqrt(pow((x - rect.right()) - (botx - rect.right()), 2)
-                                 + pow((rect.bottom() - y) - (rect.bottom() - boty), 2));
-            double angle = round(atan2((rect.bottom() - y) - (rect.bottom() - boty)
-                                     , (x - rect.right()) - (botx - rect.right()))*180/M_PI);
-            if (distance <= distanceLimit) {
-                if (x == botx && y == boty)
-                    drawColoredRect(painter, x, y, Qt::red);
-                else if (Util::isAngleAtRange(botth+90, angle, 15))
-                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (Util::isAngleAtRange(botth+50, angle, 15) && !Util::isAngleAtRange(botth+30, angle, 10))
-                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (Util::isAngleAtRange(botth+40, angle, 0.5))
-                    drawColoredRect(painter, x, y, QColor(0, 0, 255, 127));
-                else if (Util::isAngleAtRange(botth+30, angle, 15) && !Util::isAngleAtRange(botth+10, angle, 10))
-                    drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (Util::isAngleAtRange(botth+20, angle, 0.5))
-                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
-                else if (Util::isAngleAtRange(botth+10, angle, 15) && !Util::isAngleAtRange(botth-10, angle, 10))
-                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (Util::isAngleAtRange(botth, angle, 0.5))
-                    drawColoredRect(painter, x, y, QColor(0, 255, 0, 127));
-                else if (Util::isAngleAtRange(botth-10, angle, 15) && !Util::isAngleAtRange(botth-30, angle, 10))
-                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-                else if (Util::isAngleAtRange(botth-20, angle, 0.5))
-                    drawColoredRect(painter, x, y, QColor(0, 0, 255, 127));
-                else if (Util::isAngleAtRange(botth-30, angle, 15) && !Util::isAngleAtRange(botth-50, angle, 10))
-                    drawColoredRect(painter, x, y, QColor(255, 0, 255, 127));
-                else if (Util::isAngleAtRange(botth-40, angle, 0.5))
-                    drawColoredRect(painter, x, y, QColor(255, 0, 0, 127));
-                else if (Util::isAngleAtRange(botth-50, angle, 15))
-                    drawColoredRect(painter, x, y, QColor(255, 255, 0, 127));
-                else if (Util::isAngleAtRange(botth-90, angle, 15))
-                    drawColoredRect(painter, x, y, QColor(0, 255, 255, 127));
-            }
-        }
-    }*/
 }
 
 void SceneGrid::keyPressEvent(QKeyEvent *event) 

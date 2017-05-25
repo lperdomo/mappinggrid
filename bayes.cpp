@@ -4,6 +4,7 @@ Bayes::Bayes(double empty, double occupied)
 {
     this->empty = empty;
     this->occupied = occupied;
+    scanTime = NULL;
 }
 
 void Bayes::setEmpty(double empty)
@@ -21,6 +22,7 @@ double Bayes::getEmpty()
 
 void Bayes::setOccupied(double occupied)
 {
+    scanTime = new QTime();
     if (occupied > 0 && occupied < 1) {
         this->occupied = occupied;
         this->empty = 1.0-this->occupied;
@@ -30,4 +32,14 @@ void Bayes::setOccupied(double occupied)
 double Bayes::getOccupied()
 {
     return occupied;
+}
+
+bool Bayes::isTimeToScanAgain()
+{
+    if (scanTime) {
+        std::cout << "olha" << scanTime->secsTo(QTime()) << std::endl;
+        return (scanTime->secsTo(QTime()) > 5);
+    }
+    std::cout << "eita" << std::endl;
+    return true;
 }
