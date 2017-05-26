@@ -46,7 +46,7 @@ void Controller::updateOccupancyGrid()
     double size = grid->getCellSize(),
            scale = grid->getCellScale(),
            rangeMax = 5000,
-           rangeA = 2000,
+           rangeA = 2500,
            rangeB = rangeA+1000,
            distanceLimit = rangeMax/scale;
     double botx = round(bot->getX()/scale),
@@ -115,11 +115,14 @@ void Controller::updateOccupancyGrid()
                         if (distance >= (rangeA-tolerance)/scale && distance <= (rangeB-tolerance)/scale) {
                             grid->assign(x, y, i+1);
                             if (range/scale >= (rangeA-tolerance)/scale && range/scale <= (rangeB+tolerance)/scale) {
-                                occupied = 0.5*((distanceLimit-distance)/distanceLimit + (15-angle/15))*0.98;
+                                occupied = (0.5*((distanceLimit-distance)/distanceLimit + ((15-fabs((angle+botth)-angleSonar))/15)))*0.98;
+                                std::cout << "distanceLimit=" << distanceLimit
+                                          << " distance" << distance
+                                          << " abs((angle+botth)-angleSonar)" << fabs((angle+botth)-angleSonar) << std::endl;
                                 empty = 1-occupied;
                                 teste = true;
-                                occupied = 0.9;
-                                empty = 1-occupied;
+                                //occupied = 0.9;
+                                //empty = 1-occupied;
                             }
                         } else if (distance < rangeA/scale) {
                             grid->assign(x, y, i+1.5);
@@ -137,17 +140,21 @@ void Controller::updateOccupancyGrid()
                             //empty = probMax;
                             //occupied = 1-empty;
                         }
+                        if (teste == true) std::cout
+                                << "occupied=" << occupied << "empty" << empty
+                                << " grid->at(x, y)->getBayes()->getOccupied()" << grid->at(x, y)->getBayes()->getOccupied()
+                                << " grid->at(x, y)->getBayes()->getEmpty()" << grid->at(x, y)->getBayes()->getEmpty()
+                                << " result occupied=" << occupied << " empty" << empty << std::endl;
+
                         occupied = occupied*grid->at(x, y)->getBayes()->getOccupied()
                                 /(occupied*grid->at(x, y)->getBayes()->getOccupied()
                                   + empty*grid->at(x, y)->getBayes()->getEmpty());
                         if (occupied > probMax) occupied = probMax;
                         else if (occupied < probMin) occupied = probMin;
-                        if (empty > probMax) empty = probMax;
-                        else if (empty < probMin) empty = probMin;
                         empty = 1-occupied;
-                        if (teste == true) std::cout << "result occupied=" << occupied << " empty" << empty << std::endl;
 
-
+                        if (teste == true) std::cout
+                                << "result occupied=" << occupied << "empty" << empty << std::endl;
                         /*if (occupied > 0.5) {
                             std::cout << "occupied" << occupied << std::endl;
                             std::cout << "prevoccupied" << grid->at(x, y)->getBayes()->getOccupied() << std::endl;

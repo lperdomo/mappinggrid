@@ -149,6 +149,7 @@ void Bot::doTeleOp()
                 leftW = velForward*0.1; 
             } 
         } 
+        this->readingSonar();
         this->move(leftW, rightW); 
         ArUtil::sleep(500); 
     } 
@@ -231,7 +232,6 @@ void Bot::correctWithPID(double pid)
  
 void Bot::move(double leftW, double rightW) 
 { 
-    this->readingSonar();
     this->lock();
     this->setVel2(leftW, rightW); 
     this->moving();
