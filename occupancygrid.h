@@ -2,6 +2,7 @@
 #define OCCUPANCYGRID_H 
  
 #include <QObject>
+#include <QTime>
 #include <math.h> 
  
 #include "bayes.h"
@@ -13,11 +14,14 @@ public:
     explicit OccupancyGridCell(double value); 
     void setSensorId(double value);
     double getSensorId();
-    double getValue();
+    void setBayes();
     Bayes *getBayes();
+    void setScanTime();
+    bool isTimeToScanAgain();
 private:
     double sensorId;
     Bayes *bayes;
+    QTime *scanTime;
 };
  
 class OccupancyGrid : public QObject 

@@ -13,11 +13,9 @@ public:
     double getEmpty();
     void setOccupied(double occupied);
     double getOccupied();
-    bool isTimeToScanAgain();
 private:
     double empty;
     double occupied;
-    QTime *scanTime;
 };
 
 #endif // BAYES_H

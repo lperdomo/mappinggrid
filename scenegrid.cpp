@@ -27,30 +27,32 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
     for (double x = rect.left(); x < rect.width(); x++) { 
         for (double y = rect.top(); y < rect.height(); y++) { 
             if (grid->at(x, y)) { 
-                double occupied = grid->at(x, y)->getBayes()->getOccupied();
-                //std::cout << "PINTANDO occupied" << occupied << std::endl;
-                painter->setPen(QPen(Qt::lightGray));
-                painter->setBrush(QBrush(QColor(255-(255*occupied), 255-(255*occupied), 255-(255*occupied), 255*occupied)));
-                painter->drawRect(size*x, size*y*-1, size, size);
-
+                if (grid->at(x, y)->getBayes()) {
+                    double occupied = grid->at(x, y)->getBayes()->getOccupied();
+                    std::cout << "PINTANDO occupied" << occupied << " 255-(255*occupied)" << 255-(255*occupied) << " (255*occupied)" << (255*occupied) << std::endl;
+                    painter->setPen(QPen(Qt::lightGray));
+                    painter->setBrush(QBrush(QColor(255-(255*occupied), 255-(255*occupied), 255-(255*occupied), (255*occupied))));
+                    painter->drawRect(size*x, size*y*-1, size, size);
+                    std::cout << "PINTOU" << std::endl;
+                }
                 double sensorId = grid->at(x, y)->getSensorId();
                 if (sensorId == 0) drawColoredRect(painter, x, y, Qt::red);
-                else if (sensorId == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 105));
-                else if (sensorId == 1.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
-                else if (sensorId == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 105));
-                else if (sensorId == 2.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
-                else if (sensorId == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 105));
-                else if (sensorId == 3.5) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
-                else if (sensorId == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 105));
-                else if (sensorId == 4.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
-                else if (sensorId == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 105));
-                else if (sensorId == 5.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
-                else if (sensorId == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 105));
-                else if (sensorId == 6.5) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
-                else if (sensorId == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 105));
-                else if (sensorId == 7.5) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
-                else if (sensorId == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 105));
-                else if (sensorId == 8.5) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+                else if (sensorId == 1) drawColoredRect(painter, x, y, QColor(255, 255, 0, 115));
+                else if (sensorId == 1.1 || sensorId == 1.2) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 2) drawColoredRect(painter, x, y, QColor(0, 255, 255, 115));
+                else if (sensorId == 2.1 || sensorId == 2.2) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+                else if (sensorId == 3) drawColoredRect(painter, x, y, QColor(255, 0, 255, 115));
+                else if (sensorId == 3.1 || sensorId == 3.2) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
+                else if (sensorId == 4) drawColoredRect(painter, x, y, QColor(255, 255, 0, 115));
+                else if (sensorId == 4.1 || sensorId == 4.2) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 5) drawColoredRect(painter, x, y, QColor(0, 255, 255, 115));
+                else if (sensorId == 5.1 || sensorId == 5.2) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
+                else if (sensorId == 6) drawColoredRect(painter, x, y, QColor(255, 0, 255, 115));
+                else if (sensorId == 6.1 || sensorId == 6.2) drawColoredRect(painter, x, y, QColor(200, 0, 200, 65));
+                else if (sensorId == 7) drawColoredRect(painter, x, y, QColor(255, 255, 0, 115));
+                else if (sensorId == 7.1 || sensorId == 7.2) drawColoredRect(painter, x, y, QColor(200, 200, 0, 65));
+                else if (sensorId == 8) drawColoredRect(painter, x, y, QColor(0, 255, 255, 115));
+                else if (sensorId == 8.1 || sensorId == 8.2) drawColoredRect(painter, x, y, QColor(0, 200, 200, 65));
             }
         } 
     } 

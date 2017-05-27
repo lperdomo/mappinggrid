@@ -8,7 +8,7 @@ OccupancyGrid::OccupancyGrid(double width, double height, double cellSize, doubl
     this->width = width; 
     this->height = height; 
     this->cellSize = cellSize; 
-    this->cellScale = cellScale; 
+    this->cellScale = cellScale;
 } 
  
 OccupancyGrid::~OccupancyGrid() 
@@ -57,7 +57,8 @@ OccupancyGridCell::OccupancyGridCell(double sensorId) :
     QObject() 
 { 
     this->sensorId = sensorId;
-    bayes = new Bayes(0.5, 0.5);
+    bayes = NULL;
+    scanTime = NULL;
 }
  
 void OccupancyGridCell::setSensorId(double sensorId)
@@ -73,4 +74,30 @@ double OccupancyGridCell::getSensorId()
 Bayes *OccupancyGridCell::getBayes()
 {
     return bayes;
+}
+
+void OccupancyGridCell::setBayes()
+{
+    bayes = new Bayes(0.5, 0.5);
+}
+
+void OccupancyGridCell::setScanTime()
+{
+    scanTime = new QTime();
+    scanTime->start();
+}
+
+
+bool OccupancyGridCell::isTimeToScanAgain()
+{
+    if (scanTime) {
+        QTime now;
+        now.start();
+        if (scanTime->secsTo(now) >= 10) {
+            scanTime = NULL;
+            return true;
+        }
+        return false;
+    }
+    return true;
 }
