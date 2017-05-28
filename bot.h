@@ -19,19 +19,18 @@ public:
     void stop(); 
     void readingLaser();
     void readingSonar();
-    vector<ArSensorReading> *getSonar();
-    vector<ArSensorReading> *getLaser();
+    vector<ArSensorReading> getSonar();
+    vector<ArSensorReading> getLaser();
     void move(double leftW, double rightW);
     double getVelForward(); 
-    bool isCloseToSonarRange(double angle, int sonarId);
 private: 
     ArRobotConnector botConn; 
     ArArgumentParser parser; 
     ArSick sick; 
     ArLaserConnector laserConn;
-    vector<ArSensorReading> *sonar;
-    vector<ArSensorReading> *laser;
-    double velForward; 
+    vector<ArSensorReading> sonar;
+    vector<ArSensorReading> laser;
+    double velForward;
 signals: 
     void moving(); 
 public slots: 

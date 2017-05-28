@@ -31,7 +31,8 @@ SOURCES += main.cpp \
     controller.cpp \ 
     bot.cpp \ 
     util.cpp \
-    bayes.cpp
+    bayesian.cpp \
+    histogramic.cpp
  
 HEADERS  += \ 
     scenegrid.h \ 
@@ -41,7 +42,8 @@ HEADERS  += \
     controller.h \ 
     bot.h \ 
     util.h \
-    bayes.h
+    bayesian.h \
+    histogramic.h
  
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../../usr/local/Aria/lib/release/ -lAria 
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../../usr/local/Aria/lib/debug/ -lAria 

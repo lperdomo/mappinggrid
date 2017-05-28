@@ -36,9 +36,6 @@ bool Bot::start()
         return false; 
     }
 
-    sonar = new vector<ArSensorReading>();
-    laser = new vector<ArSensorReading>();
-
     ArLog::log(ArLog::Normal,"bot: sucessfully connected"); 
     sick.runAsync(); 
     this->runAsync(true); 
@@ -70,13 +67,13 @@ void Bot::readingLaser()
     if (this->isConnected() && sick.isConnected()) { 
         this->lock();
         sick.lockDevice(); 
-        laser = sick.getRawReadingsAsVector();
+        //laser = sick.getRawReadingsAsVector();
         sick.unlockDevice(); 
         this->unlock();
     } 
 }
 
-vector<ArSensorReading> *Bot::getLaser()
+vector<ArSensorReading> Bot::getLaser()
 {
     return laser;
 }
@@ -86,39 +83,19 @@ void Bot::readingSonar()
 {
     if (this->isConnected()) {
         this->lock();
-        sonar->clear();
+        sonar.clear();
         for (int i = 0; i <= 7; i++)
-            sonar->push_back(*this->getSonarReading(i));
+            sonar.push_back(*this->getSonarReading(i));
         this->unlock();
     }
 }
 
-vector<ArSensorReading> *Bot::getSonar()
+vector<ArSensorReading> Bot::getSonar()
 {
     return sonar;
 }
 
-bool Bot::isCloseToSonarRange(double angle, int sonarId)
-{
-    double botTh = this->getTh()*-1;
-    double angleSonar = this->getSonar()->at(sonarId).getSensorTh()*-1;
-    if (sonarId == 0 || sonarId == 7) {
-        return Util::isAngleAtRange(botTh+angleSonar, angle, 15);
-    } else if (sonarId >= 1 && sonarId <= 6) {
-        if (Util::isAngleAtRange(botTh+angleSonar, angle, 15)
-            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId+1).getSensorTh()*-1, angle, 10)
-            && !Util::isAngleAtRange(botTh+this->getSonar()->at(sonarId-1).getSensorTh()*-1, angle, 10)) {
-            return true;
-        } else if (Util::isAngleAtRange(botTh+angleSonar+10, angle, 0.5)) {
-            return true;
-        }
-        return false;
-    }
-    return false;
-}
-
-
-void Bot::doTeleOp() 
+void Bot::doTeleOp()
 { 
     if (!this->start()) { 
         return; 

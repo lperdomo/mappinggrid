@@ -17,14 +17,12 @@ public:
     void setBot(Bot *bot); 
     void run(); 
 private: 
-    Bot *bot; 
+    Bot *bot;
     SceneGrid *scene; 
     QGraphicsView *view; 
     OccupancyGrid *grid; 
     QThread *thread; 
     void showView(); 
-    void updateBotOnScene();
-    void updateOccupancyGrid();
 signals: 
  
 public slots: 

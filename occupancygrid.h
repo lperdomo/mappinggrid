@@ -3,9 +3,12 @@
  
 #include <QObject>
 #include <QTime>
-#include <math.h> 
- 
-#include "bayes.h"
+#include <vector>
+
+#include "bot.h"
+#include "bayesian.h"
+#include "histogramic.h"
+#include "util.h"
 
 class OccupancyGridCell : public QObject 
 { 
@@ -14,14 +17,20 @@ public:
     explicit OccupancyGridCell(double value); 
     void setSensorId(double value);
     double getSensorId();
-    void setBayes();
-    Bayes *getBayes();
+    bool isChanged();
+    void setRegion(int region);
     void setScanTime();
     bool isTimeToScanAgain();
+    Bayesian *getBayesian();
+    void bayesianProbability(double r, double R, double alpha, double beta);
+    Histogramic *getHistogramic();
 private:
     double sensorId;
-    Bayes *bayes;
+    bool changed;
+    int region;
     QTime *scanTime;
+    Bayesian *bayesian;
+    Histogramic *histogramic;
 };
  
 class OccupancyGrid : public QObject 
@@ -31,16 +40,17 @@ public:
     explicit OccupancyGrid(double width, double height, double cellSize, double cellScale); 
     ~OccupancyGrid(); 
     double getWidth(); 
-    double getHeight(); 
+    double getHeight();
     double getCellSize(); 
     double getCellScale(); 
     OccupancyGridCell *at(double x, double y); 
     void assign(double x, double y, double sensorId);
-private: 
+    void updateWithBayes(Bot *bot);
+private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 
     double height; 
-    double cellSize; 
+    double cellSize;
     double cellScale; 
 signals: 
  
