@@ -53,7 +53,7 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
     } 
 }
 
-void OccupancyGrid::updateWithBayes(Bot *bot)
+void OccupancyGrid::updateWithBayesian(Bot *bot)
 {
     double rangeA = (3000+200)/cellScale,
            rangeB = (1500-200)/cellScale,
@@ -107,6 +107,60 @@ void OccupancyGrid::updateWithBayes(Bot *bot)
                 }
                 if (atRange == false && this->at(x, y)) this->assign(x, y, -1);
             } else if (this->at(x, y)) this->assign(x, y, -1);
+        }
+    }
+}
+
+void OccupancyGrid::updateWithHistogramic(Bot *bot)
+{
+    double botx = round(bot->getX()/cellScale),
+           boty = round(bot->getY()/cellScale),
+           botth = bot->getTh(),
+           angleSonar, rangeSensor;
+
+    vector<ArSensorReading> sensor = bot->getSonar();
+
+    double rangeMax = 5000/cellScale,
+           botWidth = (botx+rangeMax > this->getWidth()/2 ? this->getWidth()/2 : botx+rangeMax),
+           botHeight = (boty+rangeMax > this->getHeight()/2 ? this->getHeight()/2 : boty+rangeMax);
+
+    for (double x = botx-rangeMax-1; x <= botWidth+1; x++) {
+        for (double y = boty-rangeMax-1; y <= botHeight+1; y++) {
+            if (x == botx && y == boty) {
+                this->assign(x, y, 0);
+            } else {
+                if (this->at(x, y)) this->assign(x, y, -1);
+            }
+        }
+    }
+
+    for (int i = 0; i < sensor.size(); i++) {
+        angleSonar = sensor.at(i).getSensorTh()*-1;
+        rangeSensor = sensor.at(i).getRange()/cellScale;
+
+        int x = floor(rangeSensor*cos((botth-angleSonar)*M_PI/180)),
+            y = floor(rangeSensor*sin((botth-angleSonar)*M_PI/180));
+
+        this->assign(x+botx, y+boty, i+1);
+        if (!this->at(x+botx, y+boty)->getHistogramic()) this->at(x+botx, y+boty)->setHistogramic();
+        if (rangeSensor < rangeMax) this->at(x+botx, y+boty)->getHistogramic()->addCV();
+
+        double rangeX = x,
+               rangeY = y,
+               m = max(fabs(rangeX), fabs(rangeY)),
+               xStep = x/m,
+               yStep = y/m;
+
+        for (int n = 0; n < m; n++) {
+            int nX = n*xStep;
+            int nY = n*yStep;
+            nX += botx;
+            nY += boty;
+            if (!(nX == botx && nY == boty)) {
+                this->assign(nX, nY, i+1.5);
+                if (!this->at(nX, nY)->getHistogramic()) this->at(nX, nY)->setHistogramic();
+                this->at(nX, nY)->getHistogramic()->subCV();
+            }
         }
     }
 }
@@ -185,4 +239,9 @@ void OccupancyGridCell::bayesianProbability(double r, double R, double alpha, do
 Histogramic *OccupancyGridCell::getHistogramic()
 {
     return histogramic;
+}
+
+void OccupancyGridCell::setHistogramic()
+{
+    histogramic = new Histogramic();
 }

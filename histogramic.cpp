@@ -8,14 +8,24 @@ Histogramic::Histogramic()
     cv = -1;
 }
 
-void Histogramic::addCV(int increment)
+int Histogramic::getCV()
 {
-    cv += increment;
+    return cv;
+}
+
+void Histogramic::addCV()
+{
+    cv += 3;
     if (cv > Histogramic::max) cv = Histogramic::max;
 }
 
-void Histogramic::subCV(int decrement)
+void Histogramic::subCV()
 {
-    cv -= decrement;
+    cv -= 1;
     if (cv < Histogramic::min) cv = Histogramic::min;
+}
+
+double Histogramic::proportionalCV()
+{
+    return (cv > 0 ? ((float)cv/(float)(Histogramic::max-Histogramic::min)) : 0);
 }

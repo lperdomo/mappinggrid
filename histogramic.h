@@ -7,8 +7,10 @@ public:
     Histogramic();
     static int max;
     static int min;
-    void addCV(int increment);
-    void subCV(int decrement);
+    int getCV();
+    void addCV();
+    void subCV();
+    double proportionalCV();
 private:
     int cv;
 };

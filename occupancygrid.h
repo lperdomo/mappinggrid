@@ -24,6 +24,7 @@ public:
     Bayesian *getBayesian();
     void bayesianProbability(double r, double R, double alpha, double beta);
     Histogramic *getHistogramic();
+    void setHistogramic();
 private:
     double sensorId;
     bool changed;
@@ -41,11 +42,12 @@ public:
     ~OccupancyGrid(); 
     double getWidth(); 
     double getHeight();
-    double getCellSize(); 
-    double getCellScale(); 
-    OccupancyGridCell *at(double x, double y); 
+    double getCellSize();
+    double getCellScale();
+    OccupancyGridCell *at(double x, double y);
     void assign(double x, double y, double sensorId);
-    void updateWithBayes(Bot *bot);
+    void updateWithBayesian(Bot *bot);
+    void updateWithHistogramic(Bot *bot);
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 

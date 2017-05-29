@@ -37,7 +37,8 @@ void Controller::run()
  
 void Controller::update() 
 {
-    grid->updateWithBayes(bot);
+    //grid->updateWithBayesian(bot);
+    grid->updateWithHistogramic(bot);
     this->showView();
 } 
  
