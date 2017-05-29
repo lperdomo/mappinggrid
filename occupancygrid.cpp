@@ -53,7 +53,7 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
     } 
 }
 
-void OccupancyGrid::updateWithBayesian(Bot *bot)
+void OccupancyGrid::updateWithBayesianOld(Bot *bot)
 {
     double rangeA = (3000+200)/cellScale,
            rangeB = (1500-200)/cellScale,
@@ -105,6 +105,99 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                         }
                     }
                 }
+                if (atRange == false && this->at(x, y)) this->assign(x, y, -1);
+            } else if (this->at(x, y)) this->assign(x, y, -1);
+        }
+    }
+}
+
+void OccupancyGrid::updateWithBayesian(Bot *bot)
+{
+    double rangeA = (3000+200)/cellScale,
+           rangeB = (1500-200)/cellScale,
+           rangeC = 5000/cellScale,
+           botx = round(bot->getX()/cellScale),
+           boty = round(bot->getY()/cellScale),
+           botth = bot->getTh()*-1;
+
+    vector<ArSensorReading> sensor = bot->getSonar();
+
+    double rangeMax = 5000/cellScale,
+           tolerance = 200/cellScale,
+           botWidth = (botx+rangeMax > this->getWidth()/2 ? this->getWidth()/2 : botx+rangeMax),
+           botHeight = (boty+rangeMax > this->getHeight()/2 ? this->getHeight()/2 : boty+rangeMax);
+
+    for (double x = botx-rangeMax-1; x <= botWidth+1; x++) {
+        for (double y = boty-rangeMax-1; y <= botHeight+1; y++) {
+            if (x == botx && y == boty) {
+                this->assign(x, y, 0);
+            } else {
+                if (this->at(x, y)) this->assign(x, y, -1);
+            }
+        }
+    }
+
+    for (int i = 0; i < sensor.size(); i++) {
+        double angleSonar = sensor.at(i).getSensorTh()*-1,
+               rangeSensor = sensor.at(i).getRange()/cellScale,
+               rangeSensorLimit = (rangeSensor+tolerance > rangeMax ? rangeMax : rangeSensor+tolerance);
+
+        for (int angle = -15; angle <= 15; angle++) {
+            int x = floor(rangeSensorLimit*cos((botth-angleSonar+angle)*M_PI/180)),
+                y = floor(rangeSensorLimit*sin((botth-angleSonar+angle)*M_PI/180));
+
+            double rangeX = x,
+                   rangeY = y,
+                   m = max(fabs(rangeX), fabs(rangeY)),
+                   xStep = x/m,
+                   yStep = y/m;
+
+            for (int n = 0; n < m; n++) {
+                int nX = n*xStep;
+                int nY = n*yStep;
+                nX += botx;
+                nY += boty;
+                if (!(nX == botx && nY == boty)) {
+                    this->assign(nX, nY, i+1.5);
+                    if (!this->at(nX, nY)->getHistogramic()) this->at(nX, nY)->setHistogramic();
+                    this->at(nX, nY)->getHistogramic()->subCV();
+                }
+            }
+        }
+
+        /*if (i == 0 || i == 7) atRange = Util::isAngleAtRange(botth+angleSonar, angle, 15);
+        else if (i >= 1 && i <= 6)
+            if (Util::isAngleAtRange(botth+angleSonar, angle, 15)
+                && !Util::isAngleAtRange(botth+sensor.at(i+1).getSensorTh()*-1, angle, 10)
+                && !Util::isAngleAtRange(botth+sensor.at(i-1).getSensorTh()*-1, angle, 10)) atRange = true;
+            else if (Util::isAngleAtRange(botth+angleSonar+10, angle, 0.5)) atRange = true;*/
+
+        if () {
+            this->assign(x, y, i+1);
+            if (rangeSensor >= rangeB && rangeSensor <= rangeA) this->at(x, y)->setRegion(1);
+            else this->at(x, y)->setRegion(3);
+            this->at(x, y)->bayesianProbability(range, rangeC, fabs(angle-botth-angleSonar), 15);
+        } else if (range < rangeB) {
+            this->assign(x, y, i+1.5);
+            if (rangeSensor < rangeB) this->at(x, y)->setRegion(2);
+            else this->at(x, y)->setRegion(3);
+            this->at(x, y)->bayesianProbability(range, rangeC, fabs(angle-botth-angleSonar), 15);
+        } else {
+            this->assign(x, y, i+1.5);
+            this->at(x, y)->setRegion(3);
+        }
+    }
+
+
+    for (double x = botx-rangeC-1; x <= botWidth+1; x++) {
+        for (double y = boty-rangeC-1; y <= botHeight+1; y++) {
+            double range = Util::distanceBetweenPoints(x, y, botx, boty, botWidth, botHeight),
+                   angle = Util::angleBetweenPoints(x, y, botx, boty, botWidth, botHeight);
+
+            if (x == botx && y == boty) {
+                this->assign(x, y, 0);
+            } else if (range <= rangeC) {
+                bool atRange = false;
                 if (atRange == false && this->at(x, y)) this->assign(x, y, -1);
             } else if (this->at(x, y)) this->assign(x, y, -1);
         }
