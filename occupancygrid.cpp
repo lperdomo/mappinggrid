@@ -53,7 +53,7 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
     } 
 }
 
-void OccupancyGrid::updateWithBayesianOld(Bot *bot)
+/*void OccupancyGrid::updateWithBayesianOld(Bot *bot)
 {
     double rangeA = (3000+200)/cellScale,
            rangeB = (1500-200)/cellScale,
@@ -109,7 +109,7 @@ void OccupancyGrid::updateWithBayesianOld(Bot *bot)
             } else if (this->at(x, y)) this->assign(x, y, -1);
         }
     }
-}
+}*/
 
 void OccupancyGrid::updateWithBayesian(Bot *bot)
 {
@@ -118,7 +118,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
            rangeC = 5000/cellScale,
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
-           botth = bot->getTh()*-1;
+           botth = bot->getTh();
 
     vector<ArSensorReading> sensor = bot->getSonar();
 
@@ -140,11 +140,27 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
     for (int i = 0; i < sensor.size(); i++) {
         double angleSonar = sensor.at(i).getSensorTh()*-1,
                rangeSensor = sensor.at(i).getRange()/cellScale,
-               rangeSensorLimit = (rangeSensor+tolerance > rangeMax ? rangeMax : rangeSensor+tolerance);
+               rangeA = (rangeSensor+tolerance > rangeMax ? rangeMax : rangeSensor+tolerance),
+               rangeB = (rangeSensor-tolerance < 1 ? 1 : rangeSensor-tolerance);
+               angleStart = -15, angleEnd = 15;
+
+
+        if (i != 0 && i != sensor.size()-1) {
+            if (angleSonar+angleStart > sensor.at(i-1).getSensorTh()+angleEnd) {
+                angleStart =
+            }
+
+        }
 
         for (int angle = -15; angle <= 15; angle++) {
-            int x = floor(rangeSensorLimit*cos((botth-angleSonar+angle)*M_PI/180)),
-                y = floor(rangeSensorLimit*sin((botth-angleSonar+angle)*M_PI/180));
+            int x = floor(rangeMax*cos((botth-angleSonar+angle)*M_PI/180)),
+                y = floor(rangeMax*sin((botth-angleSonar+angle)*M_PI/180));
+
+            if (rangeA == rangeMax) {
+                this->assign(x+botx, y+boty, i+1);
+            } else {
+                this->assign(x+botx, y+boty, i+1.5);
+            }
 
             double rangeX = x,
                    rangeY = y,
@@ -152,17 +168,15 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                    xStep = x/m,
                    yStep = y/m;
 
-            for (int n = 0; n < m; n++) {
+            /*for (int n = 0; n < m; n++) {
                 int nX = n*xStep;
                 int nY = n*yStep;
                 nX += botx;
                 nY += boty;
                 if (!(nX == botx && nY == boty)) {
                     this->assign(nX, nY, i+1.5);
-                    if (!this->at(nX, nY)->getHistogramic()) this->at(nX, nY)->setHistogramic();
-                    this->at(nX, nY)->getHistogramic()->subCV();
                 }
-            }
+            }*/
         }
 
         /*if (i == 0 || i == 7) atRange = Util::isAngleAtRange(botth+angleSonar, angle, 15);
@@ -172,7 +186,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                 && !Util::isAngleAtRange(botth+sensor.at(i-1).getSensorTh()*-1, angle, 10)) atRange = true;
             else if (Util::isAngleAtRange(botth+angleSonar+10, angle, 0.5)) atRange = true;*/
 
-        if () {
+        /*if () {
             this->assign(x, y, i+1);
             if (rangeSensor >= rangeB && rangeSensor <= rangeA) this->at(x, y)->setRegion(1);
             else this->at(x, y)->setRegion(3);
@@ -185,11 +199,11 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
         } else {
             this->assign(x, y, i+1.5);
             this->at(x, y)->setRegion(3);
-        }
+        }*/
     }
 
 
-    for (double x = botx-rangeC-1; x <= botWidth+1; x++) {
+    /*for (double x = botx-rangeC-1; x <= botWidth+1; x++) {
         for (double y = boty-rangeC-1; y <= botHeight+1; y++) {
             double range = Util::distanceBetweenPoints(x, y, botx, boty, botWidth, botHeight),
                    angle = Util::angleBetweenPoints(x, y, botx, boty, botWidth, botHeight);
@@ -201,7 +215,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                 if (atRange == false && this->at(x, y)) this->assign(x, y, -1);
             } else if (this->at(x, y)) this->assign(x, y, -1);
         }
-    }
+    }*/
 }
 
 void OccupancyGrid::updateWithHistogramic(Bot *bot)
