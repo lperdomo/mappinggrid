@@ -5,7 +5,7 @@
  
 using namespace std; 
  
-#include "Aria.h" 
+#include "Aria.h"
 #include "util.h"
  
 class Bot : public QObject, public ArRobot 

@@ -123,7 +123,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
     vector<ArSensorReading> sensor = bot->getSonar();
 
     double rangeMax = 5000/cellScale,
-           tolerance = 200/cellScale,
+           tolerance = 500/cellScale,
            botWidth = (botx+rangeMax > this->getWidth()/2 ? this->getWidth()/2 : botx+rangeMax),
            botHeight = (boty+rangeMax > this->getHeight()/2 ? this->getHeight()/2 : boty+rangeMax);
 
@@ -141,21 +141,29 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
         double angleSonar = sensor.at(i).getSensorTh()*-1,
                rangeSensor = sensor.at(i).getRange()/cellScale,
                rangeA = (rangeSensor+tolerance > rangeMax ? rangeMax : rangeSensor+tolerance),
-               rangeB = (rangeSensor-tolerance < 1 ? 1 : rangeSensor-tolerance);
-               angleStart = -15, angleEnd = 15;
+               rangeB = (rangeSensor-tolerance < 1 ? 1 : rangeSensor-tolerance),
+               angleStart, angleEnd;
 
-
-        if (i != 0 && i != sensor.size()-1) {
-            if (angleSonar+angleStart > sensor.at(i-1).getSensorTh()+angleEnd) {
-                angleStart =
+        if (i == 0 || i == sensor.size()-1) {
+            angleStart = angleSonar-15;
+            angleEnd = angleSonar+15;
+        } else {
+            if (angleSonar-15 > sensor.at(i-1).getSensorTh()+15) {
+                angleStart = angleSonar-10;
+            } else if (angleSonar-15 < sensor.at(i-1).getSensorTh()+15) {
+                angleStart = angleSonar-10;
             }
-
+            if (angleSonar+15 > sensor.at(i-1).getSensorTh()-15) {
+                angleEnd = angleSonar+10;
+            } else if (angleSonar+15 < sensor.at(i-1).getSensorTh()-15) {
+                angleEnd = angleSonar+10;
+            }
         }
-
-        for (int angle = -15; angle <= 15; angle++) {
-            int x = floor(rangeMax*cos((botth-angleSonar+angle)*M_PI/180)),
-                y = floor(rangeMax*sin((botth-angleSonar+angle)*M_PI/180));
-
+        for (double angle = angleStart; angle <= angleEnd; angle+=0.5) {
+            //std::cout << "i" << i << " angle" << angle << std::endl;
+            int x = round(rangeMax*cos((botth-angle)*M_PI/180)),
+                y = round(rangeMax*sin((botth-angle)*M_PI/180));
+            //std::cout << "x" << x << " y" << y << std::endl;
             if (rangeA == rangeMax) {
                 this->assign(x+botx, y+boty, i+1);
             } else {
@@ -168,15 +176,27 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                    xStep = x/m,
                    yStep = y/m;
 
-            /*for (int n = 0; n < m; n++) {
+            for (int n = 0; n < m; n++) {
                 int nX = n*xStep;
                 int nY = n*yStep;
+                double range = Util::distanceBetweenPoints(nX, nY, botx, boty, botWidth, botHeight);
                 nX += botx;
                 nY += boty;
                 if (!(nX == botx && nY == boty)) {
-                    this->assign(nX, nY, i+1.5);
+                    if (rangeB <= range && range <= rangeA) {
+                        this->assign(nX, nY, i+1);
+                        this->at(nX, nY)->setRegion(1);
+                        this->at(nX, nY)->bayesianProbability(range, rangeMax, fabs(angle-botth-angleSonar), 15);
+                    } else if (range <= rangeB) {
+                        this->assign(nX, nY, i+1.5);
+                        this->at(nX, nY)->setRegion(2);
+                        this->at(nX, nY)->bayesianProbability(range, rangeMax, fabs(angle-botth-angleSonar), 15);
+                    } else {
+                        this->assign(nX, nY, i+1.5);
+                        this->at(nX, nY)->setRegion(3);
+                    }
                 }
-            }*/
+            }
         }
 
         /*if (i == 0 || i == 7) atRange = Util::isAngleAtRange(botth+angleSonar, angle, 15);
