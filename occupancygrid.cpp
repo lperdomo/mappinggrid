@@ -164,37 +164,39 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
             int x = round(rangeMax*cos((botth-angle)*M_PI/180)),
                 y = round(rangeMax*sin((botth-angle)*M_PI/180));
             //std::cout << "x" << x << " y" << y << std::endl;
-            if (rangeA == rangeMax) {
-                this->assign(x+botx, y+boty, i+1);
-            } else {
-                this->assign(x+botx, y+boty, i+1.5);
-            }
-
+            /*if (rangeSensor >= rangeMax) {
+                this->assign(x, y, i+1.5);
+                this->at(x, y)->setRegion(3);
+            }*/
             double rangeX = x,
                    rangeY = y,
                    m = max(fabs(rangeX), fabs(rangeY)),
                    xStep = x/m,
                    yStep = y/m;
 
-            for (int n = 0; n < m; n++) {
+            for (int n = 0; n <= m; n++) {
                 int nX = n*xStep;
                 int nY = n*yStep;
                 double range = Util::distanceBetweenPoints(nX, nY, botx, boty, botWidth, botHeight);
                 nX += botx;
                 nY += boty;
                 if (!(nX == botx && nY == boty)) {
-                    if (rangeB <= range && range <= rangeA) {
-                        this->assign(nX, nY, i+1);
-                        this->at(nX, nY)->setRegion(1);
-                        this->at(nX, nY)->bayesianProbability(range, rangeMax, fabs(angle-botth-angleSonar), 15);
-                    } else if (range <= rangeB) {
+                    if (rangeSensor >= rangeMax) {
                         this->assign(nX, nY, i+1.5);
                         this->at(nX, nY)->setRegion(2);
-                        this->at(nX, nY)->bayesianProbability(range, rangeMax, fabs(angle-botth-angleSonar), 15);
-                    } else {
+                        this->at(nX, nY)->bayesianProbability(rangeSensor, rangeMax, fabs(botth-angle), 15);
+                    } else if (rangeA < range) {
                         this->assign(nX, nY, i+1.5);
                         this->at(nX, nY)->setRegion(3);
-                    }
+                    } else if (rangeB <= range && range <= rangeA) {
+                        this->assign(nX, nY, i+1);
+                        this->at(nX, nY)->setRegion(1);
+                        this->at(nX, nY)->bayesianProbability(rangeSensor, rangeMax, fabs(botth-angle), 15);
+                    } /*else if (range < rangeB) {
+                        this->assign(nX, nY, i+1.5);
+                        this->at(nX, nY)->setRegion(2);
+                        this->at(nX, nY)->bayesianProbability(rangeSensor, rangeMax, fabs(botth-angle), 15);
+                    }*/
                 }
             }
         }
@@ -237,6 +239,96 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
         }
     }*/
 }
+
+/**
+ * void Mapping::calculateMapBayes()
+{
+    cout << "Calculando o mapa pelo metodo de Bayes" << endl;
+
+    float variacao = 100;//10 centimetros
+    float pMax = 0.90;
+    double aberturaSonar = 20.0;
+
+    for(int x=0; x<MAP_LENGTH_WORLD;x++)
+    {
+        for(int y=0; y<MAP_LENGTH_WORLD;y++)
+        {
+            double angle = round(atan2(
+                                  ((float)MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange-yRobo,
+                                  ((float)x + 0.5 - MAP_LENGTH_WORLD/2)*celRange-xRobo
+                                  )*180/M_PI)-thRobo;
+            float distance = sqrt(
+                        pow(
+                            (x + 0.5 - MAP_LENGTH_WORLD/2)*celRange - xRobo,
+                            2
+                            )
+                        +pow(
+                            (MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange - yRobo,
+                            2
+                            )
+                        );
+
+            if(angle < -180)
+                angle += 360;
+            if(angle > 180)
+                angle -= 360;
+
+            for(int i =0;i<sonares->size();i++)
+            {
+
+                float angleSensor = sonares->at(i).getSensorTh();
+
+                if(fabs(angle-angleSensor) <= aberturaSonar/2)
+                {
+                    float reading = sonares->at(i).getRange();
+                    double pOcupada, pVazia;
+                    pOcupada = pVazia = 0.5;
+
+                    if(reading > rangeMax)
+                    {
+                        reading = rangeMax;
+                    }
+                    if(reading + variacao < distance)
+                    {
+                        //cout << "Área desconhecida... " << endl;
+                    }
+                    else if(reading == rangeMax)
+                    {
+                        pVazia = pMax;
+                        pOcupada = 1.0-pVazia;
+                    }
+                    else if(reading - variacao > distance)
+                    {
+                        //cout << "Área vaga... " << endl;
+                        pVazia = 0.5*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar);
+                        pVazia = max(pVazia, 1.0-pMax);
+                        pOcupada = 1.0 - pVazia;
+
+                    }
+                    else if((reading - variacao <= distance) && (reading + variacao >= distance))
+                    {
+                        //cout << "Parede... " << endl;
+                        pOcupada = 0.5*pMax*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar);
+                        //pVazia = max(pOcupada, 1.0-pMax);
+                        pVazia = 1.0 - pOcupada;
+
+                    }
+                    mapCell[x][y].setProbabilidadeOcupada(
+                                pOcupada*mapCell[x][y].probabilidadeOcupada()
+                                /
+                                (pOcupada*mapCell[x][y].probabilidadeOcupada() + pVazia*mapCell[x][y].probabilidadeVazia())
+                                );
+
+                    if(mapCell[x][y].probabilidadeVazia() == 0.0)
+                        cout << "ZERO!!!!" << endl;
+                    break;
+                }
+            }
+        }
+    }
+
+}*/
+
 
 void OccupancyGrid::updateWithHistogramic(Bot *bot)
 {
