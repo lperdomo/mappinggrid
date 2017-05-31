@@ -46,6 +46,7 @@ public:
     double getCellScale();
     OccupancyGridCell *at(double x, double y);
     void assign(double x, double y, double sensorId);
+    void reset(double botx, double boty);
     void updateWithBayesian(Bot *bot);
     void updateWithHistogramic(Bot *bot);
 private:
