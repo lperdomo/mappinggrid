@@ -8,6 +8,7 @@
 #include "bot.h"
 #include "bayesian.h"
 #include "histogramic.h"
+#include "potentialfield.h"
 #include "util.h"
 
 class OccupancyGridCell : public QObject 
@@ -32,6 +33,7 @@ private:
     QTime *scanTime;
     Bayesian *bayesian;
     Histogramic *histogramic;
+    PotentialField *potentialfield;
 };
  
 class OccupancyGrid : public QObject 

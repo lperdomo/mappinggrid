@@ -254,6 +254,7 @@ OccupancyGridCell::OccupancyGridCell(double sensorId) :
     bayesian = NULL;
     histogramic = NULL;
     scanTime = NULL;
+    potentialfield = NULL;
     changed = false;
 }
  
