@@ -13,6 +13,11 @@ int Histogramic::getCV()
     return cv;
 }
 
+void Histogramic::setCV(int cv)
+{
+    this->cv = cv;
+}
+
 void Histogramic::addCV()
 {
     cv += 3;

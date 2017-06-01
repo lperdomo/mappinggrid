@@ -151,16 +151,10 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
             angleStart = angleSonar-15;
             angleEnd = angleSonar+15;
         } else {
-            if (angleSonar-15 > sensor.at(i-1).getSensorTh()+15) {
-                angleStart = angleSonar-10;
-            } else if (angleSonar-15 < sensor.at(i-1).getSensorTh()+15) {
-                angleStart = angleSonar-10;
-            }
-            if (angleSonar+15 > sensor.at(i-1).getSensorTh()-15) {
-                angleEnd = angleSonar+10;
-            } else if (angleSonar+15 < sensor.at(i-1).getSensorTh()-15) {
-                angleEnd = angleSonar+10;
-            }
+            if (angleSonar-15 > sensor.at(i-1).getSensorTh()+15) angleStart = angleSonar-10;
+            else if (angleSonar-15 < sensor.at(i-1).getSensorTh()+15) angleStart = angleSonar-10;
+            if (angleSonar+15 > sensor.at(i-1).getSensorTh()-15) angleEnd = angleSonar+10;
+            else if (angleSonar+15 < sensor.at(i-1).getSensorTh()-15) angleEnd = angleSonar+10;
         }
 
         for (double angle = angleStart; angle <= angleEnd; angle+=0.1) {
@@ -172,8 +166,8 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                    stepY = y/cellMax;
 
             for (int cell = 0; cell <= cellMax; cell++) {
-                int cellX = cell*stepX+botx;
-                int cellY = cell*stepY+boty;
+                int cellX = cell*stepX+botx,
+                    cellY = cell*stepY+boty;
                 double range = Util::distanceBetweenPoints(cellX, cellY, botx, boty, width, height);
 
                 if (!(cellX == botx && cellY == boty)) {
@@ -215,12 +209,27 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
         angleSonar = sensor.at(i).getSensorTh()*-1;
         rangeSensor = sensor.at(i).getRange()/cellScale;
 
-        int x = floor(rangeSensor*cos((botth-angleSonar)*M_PI/180)),
-            y = floor(rangeSensor*sin((botth-angleSonar)*M_PI/180));
+        int x = round(rangeSensor*cos((botth-angleSonar)*M_PI/180)),
+            y = round(rangeSensor*sin((botth-angleSonar)*M_PI/180));
 
         this->assign(x+botx, y+boty, i+1);
         if (!this->at(x+botx, y+boty)->getHistogramic()) this->at(x+botx, y+boty)->setHistogramic();
-        if (rangeSensor < rangeMax) this->at(x+botx, y+boty)->getHistogramic()->addCV();
+        if (rangeSensor < rangeMax) {
+            this->at(x+botx, y+boty)->getHistogramic()->addCV();
+            int GRO = this->at(x+botx, y+boty)->getHistogramic()->getCV();
+            for (int j = i-1; j < i+1; j++) {
+                for (int k = i-1; k < i+1; k++) {
+                    if (!(j == x && k == y) && this->at(j+botx, k+boty)) {
+                        if (this->at(j+botx, k+boty)->getHistogramic()) {
+                            GRO += 0.5*this->at(j+botx, k+boty)->getHistogramic()->getCV();
+                        }
+                    }
+                }
+            }
+            GRO = min(Histogramic::max, GRO);
+            //std::cout << "GRO" << GRO << std::endl;
+            this->at(x+botx, y+boty)->getHistogramic()->setCV(GRO);
+        }
 
         double cellMax = max(fabs(x), fabs(y)),
                stepX = x/cellMax,
@@ -325,92 +334,3 @@ void OccupancyGridCell::setHistogramic()
 {
     histogramic = new Histogramic();
 }
-
-/**
- * void Mapping::calculateMapBayes()
-{
-    cout << "Calculando o mapa pelo metodo de Bayes" << endl;
-
-    float variacao = 100;//10 centimetros
-    float pMax = 0.90;
-    double aberturaSonar = 20.0;
-
-    for(int x=0; x<MAP_LENGTH_WORLD;x++)
-    {
-        for(int y=0; y<MAP_LENGTH_WORLD;y++)
-        {
-            double angle = round(atan2(
-                                  ((float)MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange-yRobo,
-                                  ((float)x + 0.5 - MAP_LENGTH_WORLD/2)*celRange-xRobo
-                                  )*180/M_PI)-thRobo;
-            float distance = sqrt(
-                        pow(
-                            (x + 0.5 - MAP_LENGTH_WORLD/2)*celRange - xRobo,
-                            2
-                            )
-                        +pow(
-                            (MAP_LENGTH_WORLD/2 - y + 0.5 )*celRange - yRobo,
-                            2
-                            )
-                        );
-
-            if(angle < -180)
-                angle += 360;
-            if(angle > 180)
-                angle -= 360;
-
-            for(int i =0;i<sonares->size();i++)
-            {
-
-                float angleSensor = sonares->at(i).getSensorTh();
-
-                if(fabs(angle-angleSensor) <= aberturaSonar/2)
-                {
-                    float reading = sonares->at(i).getRange();
-                    double pOcupada, pVazia;
-                    pOcupada = pVazia = 0.5;
-
-                    if(reading > rangeMax)
-                    {
-                        reading = rangeMax;
-                    }
-                    if(reading + variacao < distance)
-                    {
-                        //cout << "Área desconhecida... " << endl;
-                    }
-                    else if(reading == rangeMax)
-                    {
-                        pVazia = pMax;
-                        pOcupada = 1.0-pVazia;
-                    }
-                    else if(reading - variacao > distance)
-                    {
-                        //cout << "Área vaga... " << endl;
-                        pVazia = 0.5*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar);
-                        pVazia = max(pVazia, 1.0-pMax);
-                        pOcupada = 1.0 - pVazia;
-
-                    }
-                    else if((reading - variacao <= distance) && (reading + variacao >= distance))
-                    {
-                        //cout << "Parede... " << endl;
-                        pOcupada = 0.5*pMax*((2*rangeMax-distance)/(2*rangeMax) + (aberturaSonar-fabs(angle-angleSensor))/aberturaSonar);
-                        //pVazia = max(pOcupada, 1.0-pMax);
-                        pVazia = 1.0 - pOcupada;
-
-                    }
-                    mapCell[x][y].setProbabilidadeOcupada(
-                                pOcupada*mapCell[x][y].probabilidadeOcupada()
-                                /
-                                (pOcupada*mapCell[x][y].probabilidadeOcupada() + pVazia*mapCell[x][y].probabilidadeVazia())
-                                );
-
-                    if(mapCell[x][y].probabilidadeVazia() == 0.0)
-                        cout << "ZERO!!!!" << endl;
-                    break;
-                }
-            }
-        }
-    }
-
-}*/

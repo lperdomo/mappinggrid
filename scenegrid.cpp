@@ -31,7 +31,8 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                 if (grid->at(x, y)->getBayesian() || grid->at(x, y)->getHistogramic()) {
                     if (grid->at(x, y)->getBayesian()) occupied = grid->at(x, y)->getBayesian()->getOccupied();
                     if (grid->at(x, y)->getHistogramic()) occupied = grid->at(x, y)->getHistogramic()->proportionalCV();
-                    painter->setPen(QPen(Qt::lightGray));
+                    //painter->setPen(QPen(Qt::lightGray));
+                    painter->setPen(QPen(QColor(220, 220, 220)));
                     int cor = 255-(255*occupied);
                     if (cor >= 255) cor = 254;
                     else if (cor <= 0) cor = 1;

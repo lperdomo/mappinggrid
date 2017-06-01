@@ -7,6 +7,7 @@ public:
     Histogramic();
     static int max;
     static int min;
+    void setCV(int cv);
     int getCV();
     void addCV();
     void subCV();
