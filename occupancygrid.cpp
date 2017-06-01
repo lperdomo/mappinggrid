@@ -260,7 +260,7 @@ OccupancyGridCell::OccupancyGridCell(double sensorId) :
  
 void OccupancyGridCell::setSensorId(double sensorId)
 { 
-    changed = (changed ? changed : (this->sensorId != sensorId));
+    if (!changed) this->sensorId != sensorId;
     this->sensorId = sensorId;
 } 
  
