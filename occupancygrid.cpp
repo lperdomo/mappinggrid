@@ -9,6 +9,9 @@ OccupancyGrid::OccupancyGrid(double width, double height, double cellSize, doubl
     this->height = height; 
     this->cellSize = cellSize; 
     this->cellScale = cellScale;
+    PotentialField::min = cellScale;
+    PotentialField::max = cellScale/cos(M_PI*45.0/180.0);
+    PotentialField::obstacle = width*height*PotentialField::max*2;
 } 
  
 OccupancyGrid::~OccupancyGrid() 
@@ -47,6 +50,7 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
     x = x + (width/2); 
     y = (height/2) - y; 
     if (!matrix[x][y]) { 
+        //PotentialField *potentialField = new PotentialField();
         matrix[x][y] = new OccupancyGridCell(sensorId);
     } else { 
         matrix[x][y]->setSensorId(sensorId);
@@ -217,8 +221,8 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
         if (rangeSensor < rangeMax) {
             this->at(x+botx, y+boty)->getHistogramic()->addCV();
             int GRO = this->at(x+botx, y+boty)->getHistogramic()->getCV();
-            for (int j = i-1; j < i+1; j++) {
-                for (int k = i-1; k < i+1; k++) {
+            for (int j = x-1; j < x+1; j++) {
+                for (int k = y-1; k < y+1; k++) {
                     if (!(j == x && k == y) && this->at(j+botx, k+boty)) {
                         if (this->at(j+botx, k+boty)->getHistogramic()) {
                             GRO += 0.5*this->at(j+botx, k+boty)->getHistogramic()->getCV();
@@ -247,14 +251,36 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
     }
 }
 
+void OccupancyGrid::updatePotentialFields()
+{
+    double limitx = width/2,
+           limity = height/2,
+           gauss;
+    for (double x = limitx*-1; x < limitx; x++)  {
+        for (double y = limity*-1; y < limity; y++) {
+            if (this->at(x, y)) {
+                if (this->at(x, y)->getBayesian() || this->at(x, y)->getHistogramic()) {
+                    gauss = 0;
+                    if (x-1 > limitx*-1) gauss += this->at(x-1, y)->getPotentialField()->getPotential();
+                    if (x+1 > limitx) gauss += this->at(x+1, y)->getPotentialField()->getPotential();
+                    if (y-1 > limity*-1) gauss += this->at(x, y-1)->getPotentialField()->getPotential();
+                    if (y+1 > limity) gauss += this->at(x, y+1)->getPotentialField()->getPotential();
+                    gauss *= 0.4;
+                    this->at(x, y)->updatePotentialField(gauss);
+                }
+            }
+        }
+    }
+}
+
 OccupancyGridCell::OccupancyGridCell(double sensorId) :
     QObject() 
 { 
     this->sensorId = sensorId;
+    potentialField = new PotentialField();
     bayesian = NULL;
     histogramic = NULL;
     scanTime = NULL;
-    potentialfield = NULL;
     changed = false;
 }
  
@@ -325,7 +351,6 @@ void OccupancyGridCell::bayesianProbability(double r, double R, double alpha, do
     }
 }
 
-
 Histogramic *OccupancyGridCell::getHistogramic()
 {
     return histogramic;
@@ -334,4 +359,24 @@ Histogramic *OccupancyGridCell::getHistogramic()
 void OccupancyGridCell::setHistogramic()
 {
     histogramic = new Histogramic();
+}
+
+PotentialField *OccupancyGridCell::getPotentialField()
+{
+    return potentialField;
+}
+
+void OccupancyGridCell::updatePotentialField(double potential)
+{
+    if (this->getBayesian()) {
+        value = this->getBayesian()->getOccupied();
+    } else if (this->getHistogramic()) {
+        value = this->getHistogramic()->getCV();
+        if (value >= 10) {
+            potentialField->setPotential(PotentialField::obstacle);
+        } else {
+            potentialField->setPotential(potential);
+        }
+    }
+
 }

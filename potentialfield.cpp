@@ -1,26 +1,23 @@
 #include "potentialfield.h"
 
+double PotentialField::min = 0;
+double PotentialField::max = 0;
+double PotentialField::obstacle = 0;
+
 PotentialField::PotentialField()
 {
+    potential = -PotentialField::obstacle;
 }
 
-void PotentialField::setValue(double value)
+void PotentialField::setPotential(double potential)
 {
-    this->value = value;
+    this->potential = potential;
 }
 
-double PotentialField::getValue()
+double PotentialField::getPotential()
 {
-    return value;
+    return potential;
 }
-
-//angleAndar = 0.0;
-//mMapping = map;
-//mMapSize = mapSize;
-//celRange = 100;
-//Dmin = celRange;
-//Dmax = celRange/cos(M_PI*45.0/180.0);
-//Dobstacle = mMapSize*mMapSize*Dmax*2;
 
 
 

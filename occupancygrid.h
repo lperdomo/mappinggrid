@@ -15,7 +15,7 @@ class OccupancyGridCell : public QObject
 { 
     Q_OBJECT 
 public: 
-    explicit OccupancyGridCell(double value); 
+    explicit OccupancyGridCell(double sensorId);
     void setSensorId(double value);
     double getSensorId();
     bool isChanged();
@@ -26,6 +26,8 @@ public:
     void bayesianProbability(double r, double R, double alpha, double beta);
     Histogramic *getHistogramic();
     void setHistogramic();
+    void getPotentialField();
+    void updatePotentialField(double potential);
 private:
     double sensorId;
     bool changed;
@@ -33,7 +35,7 @@ private:
     QTime *scanTime;
     Bayesian *bayesian;
     Histogramic *histogramic;
-    PotentialField *potentialfield;
+    PotentialField *potentialField;
 };
  
 class OccupancyGrid : public QObject 
@@ -51,6 +53,7 @@ public:
     void reset(double botx, double boty);
     void updateWithBayesian(Bot *bot);
     void updateWithHistogramic(Bot *bot);
+    void updatePotentialFields();
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 

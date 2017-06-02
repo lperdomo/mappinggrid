@@ -5,10 +5,13 @@ class PotentialField
 {
 public:
     PotentialField();
-    void setValue(double value);
-    double getValue();
+    void setPotential(double potential);
+    double getPotential();
+    static double obstacle;
+    static double min;
+    static double max;
 private:
-    double value;
+    double potential;
 };
 
 #endif // POTENTIALFIELD_H
