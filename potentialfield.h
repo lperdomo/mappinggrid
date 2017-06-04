@@ -1,17 +1,26 @@
 #ifndef POTENTIALFIELD_H
 #define POTENTIALFIELD_H
 
+#include <iostream>
+
 class PotentialField
 {
 public:
     PotentialField();
     void setPotential(double potential);
     double getPotential();
+    void setTh(double th);
+    double getTh();
+    void setError(double error);
+    double getError();
     static double obstacle;
+    static double target;
     static double min;
     static double max;
 private:
     double potential;
+    double th;
+    double error;
 };
 
 #endif // POTENTIALFIELD_H

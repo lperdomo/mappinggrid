@@ -21,8 +21,10 @@ public:
     void readingSonar();
     vector<ArSensorReading> getSonar();
     vector<ArSensorReading> getLaser();
-    void move(double leftW, double rightW);
-    double getVelForward(); 
+    void moveAlt(double leftW, double rightW);
+    double getVelForward();
+    void setLeftWheel(double leftWheel);
+    void setRightWheel(double rightWheel);
 private: 
     ArRobotConnector botConn; 
     ArArgumentParser parser; 
@@ -31,9 +33,12 @@ private:
     vector<ArSensorReading> sonar;
     vector<ArSensorReading> laser;
     double velForward;
+    double leftWheel;
+    double rightWheel;
 signals: 
-    void moving(); 
+    void reading();
 public slots: 
+    void doExploration();
     void doTeleOp(); 
     void doWallFollowing(); 
     void correctWithPID(double pid); 

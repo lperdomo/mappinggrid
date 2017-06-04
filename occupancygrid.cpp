@@ -9,9 +9,12 @@ OccupancyGrid::OccupancyGrid(double width, double height, double cellSize, doubl
     this->height = height; 
     this->cellSize = cellSize; 
     this->cellScale = cellScale;
-    PotentialField::min = cellScale;
-    PotentialField::max = cellScale/cos(M_PI*45.0/180.0);
-    PotentialField::obstacle = width*height*PotentialField::max*2;
+    //PotentialField::min = cellScale;
+    //PotentialField::max = cellScale/cos(M_PI*45.0/180.0);
+    //PotentialField::obstacle = width*height*PotentialField::max*2;
+    PotentialField::target = 0;
+    PotentialField::obstacle = 1;
+
 } 
  
 OccupancyGrid::~OccupancyGrid() 
@@ -121,7 +124,7 @@ void OccupancyGrid::reset(double botx, double boty)
            botWidth = (botx+rangeMax > width/2 ? width/2 : botx+rangeMax),
            botHeight = (boty+rangeMax > height/2 ? height/2 : boty+rangeMax);
 
-    for (double x = botx-rangeMax-1; x <= botWidth+1; x++) {
+    for (double x = botx-rangeMax-2; x <= botWidth+2; x++) {
         for (double y = boty-rangeMax-1; y <= botHeight+1; y++) {
             if (x == botx && y == boty) {
                 this->assign(x, y, 0);
@@ -255,20 +258,122 @@ void OccupancyGrid::updatePotentialFields()
 {
     double limitx = width/2,
            limity = height/2,
-           gauss;
+           error = 1, errorMax = 0.004;
+
     for (double x = limitx*-1; x < limitx; x++)  {
         for (double y = limity*-1; y < limity; y++) {
             if (this->at(x, y)) {
                 if (this->at(x, y)->getBayesian() || this->at(x, y)->getHistogramic()) {
-                    gauss = 0;
-                    if (x-1 > limitx*-1) gauss += this->at(x-1, y)->getPotentialField()->getPotential();
-                    if (x+1 > limitx) gauss += this->at(x+1, y)->getPotentialField()->getPotential();
-                    if (y-1 > limity*-1) gauss += this->at(x, y-1)->getPotentialField()->getPotential();
-                    if (y+1 > limity) gauss += this->at(x, y+1)->getPotentialField()->getPotential();
-                    gauss *= 0.4;
-                    this->at(x, y)->updatePotentialField(gauss);
+                    if (this->at(x, y)->getBayesian()) {
+                        if (this->at(x, y)->getBayesian()->getOccupied() > 0.5) {
+                            this->at(x, y)->getPotentialField()->setPotential(PotentialField::obstacle);
+                            this->at(x, y)->getPotentialField()->setTh(0);
+                        }
+                    } else if (this->at(x, y)->getHistogramic()) {
+                        if (this->at(x, y)->getHistogramic()->getCV() >= 4) {
+                            this->at(x, y)->getPotentialField()->setPotential(PotentialField::obstacle);
+                            this->at(x, y)->getPotentialField()->setTh(0);
+                        }
+                    }
                 }
             }
+        }
+    }
+
+
+    //while (error > errorMax) {
+        error = 0;
+        //std::cout << "error" << error << std::endl;
+        for (double x = limitx*-1; x < limitx; x++)  {
+            for (double y = limity*-1; y < limity; y++) {
+                this->calculatePotential(x, y);
+            }
+        }
+        for (double x = limitx; x > limitx*-1; x--)  {
+            for (double y = limity*-1; y < limity; y++) {
+                this->calculatePotential(x, y);
+            }
+        }
+        for (double x = limitx*-1; x < limitx; x++)  {
+            for (double y = limity; y > limity*-1; y--) {
+                this->calculatePotential(x, y);
+            }
+        }
+        for (double x = limitx; x > limitx*-1; x--)  {
+            for (double y = limity; y > limity*-1; y--) {
+                this->calculatePotential(x, y);
+                if (this->at(x, y)) {
+                    //if (this->at(x, y)->getPotentialField())
+                        //error += this->at(x, y)->getPotentialField()->getError();
+                }
+            }
+        }
+        //std::cout << "error" << error << std::endl;
+    //}
+}
+
+void OccupancyGrid::calculatePotential(double x, double y)
+{
+    double dx, dy;
+    if (this->at(x, y)) {
+        if (this->at(x, y)->getBayesian() || this->at(x, y)->getHistogramic()) {
+            double limitx = width/2,
+                   limity = height/2,
+                   gauss, p1, p2, p3, p4;
+            if (x+1 <= limitx) {
+                p1 = PotentialField::target;
+                if (this->at(x+1, y)) {
+                    if (this->at(x+1, y)->getPotentialField()) {
+                        p1 = this->at(x+1, y)->getPotentialField()->getPotential();
+                    }
+                }
+            } else {
+                p1 = PotentialField::obstacle;
+            }
+            if (x-1 >= limitx*-1) {
+                p2 = PotentialField::target;
+                if (this->at(x-1, y)) {
+                    if (this->at(x-1, y)->getPotentialField()) {
+                        p2 = this->at(x-1, y)->getPotentialField()->getPotential();
+                    }
+                }
+            } else {
+                p2 = PotentialField::obstacle;
+            }
+            if (y+1 <= limity) {
+                p3 = PotentialField::target;
+                if (this->at(x, y+1)) {
+                    if (this->at(x, y+1)->getPotentialField()) {
+                        p3 = this->at(x, y+1)->getPotentialField()->getPotential();
+                    }
+                }
+            } else {
+                p3 = PotentialField::obstacle;
+            }
+            if (y-1 >= limity*-1) {
+                p4 = PotentialField::target;
+                if (this->at(x, y-1)) {
+                    if (this->at(x, y-1)->getPotentialField()) {
+                        p4 = this->at(x, y-1)->getPotentialField()->getPotential();
+                    }
+                }
+            } else {
+                p4 = PotentialField::obstacle;
+            }
+
+            gauss = (p1+p2+p3+p4)*0.4;
+            dx = (p1-p2)/2;
+            dy = (p4-p3)/2;
+            if (fabs(dy) < fabs(dx)) {
+                dx = 0;
+            } else {
+                dy = 0;
+            }
+            //double th = atan2(dy, dx)*180/M_PI;
+            double th = atan2(-(p3-p4),-(p2-p1))*180/M_PI;
+            //this->at(x, y)->getPotentialField()->setError(pow(this->at(x, y)->getPotentialField()->getPotential()-gauss, 2));
+            this->at(x, y)->getPotentialField()->setPotential(gauss);
+            this->at(x, y)->getPotentialField()->setTh(th);
         }
     }
 }
@@ -366,16 +471,19 @@ PotentialField *OccupancyGridCell::getPotentialField()
     return potentialField;
 }
 
-void OccupancyGridCell::updatePotentialField(double potential)
+void OccupancyGridCell::updatePotentialField(double potential, double th)
 {
+    double value;
     if (this->getBayesian()) {
         value = this->getBayesian()->getOccupied();
     } else if (this->getHistogramic()) {
         value = this->getHistogramic()->getCV();
-        if (value >= 10) {
+        if (value >= 6) {
             potentialField->setPotential(PotentialField::obstacle);
+            potentialField->setTh(-1);
         } else {
             potentialField->setPotential(potential);
+            potentialField->setTh(th);
         }
     }
 

@@ -37,10 +37,25 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                     if (cor >= 255) cor = 254;
                     else if (cor <= 0) cor = 1;
                     //std::cout << "ANTES cor=" << cor << " alpha=" << alpha << std::endl;
-                    painter->setBrush(QBrush(QColor(cor, cor, cor)));
+                    painter->setBrush(QBrush(QColor(cor, cor, cor, 255)));
                     //std::cout << "DEPOIS" << std::endl;
                     painter->drawRect(size*x, size*y*-1, size, size);
                     //std::cout << "EITA" << std::endl;
+                    if (size > 8) {
+                        if (grid->at(x, y)->getPotentialField()) {
+                            if (grid->at(x, y)->getPotentialField()->getPotential() != PotentialField::max) {
+                                //if (x == 1 && y == 1) {
+                                painter->setPen(QPen(Qt::black));
+                                double cx = size*x+(size/2), cy = size*y-(size/2),
+                                       nx = cx+((size/3)*cos(grid->at(x, y)->getPotentialField()->getTh())),
+                                       ny = cy+((size/3)*sin(grid->at(x, y)->getPotentialField()->getTh()));
+                                painter->drawLine(cx, cy*-1, nx, ny*-1);
+                                painter->drawRect(nx, ny*-1, 1, 1);
+                                //painter->drawText(cx, cy*-1, QString::number(grid->at(x, y)->getPotentialField()->getPotential()));
+                                //}
+                            }
+                        }
+                    }
                 }
 
                 double sensorId = grid->at(x, y)->getSensorId();

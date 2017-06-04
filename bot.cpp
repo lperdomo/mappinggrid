@@ -12,6 +12,8 @@ Bot::Bot(int *argc, char **argv) :
     QObject() 
 { 
     velForward = 200;
+    leftWheel = 0;
+    rightWheel = 0;
 } 
  
 Bot::~Bot() 
@@ -42,8 +44,9 @@ bool Bot::start()
  
     this->lock(); 
     this->enableMotors(); 
-    this->unlock(); 
- 
+    this->unlock();
+
+    ArUtil::sleep(500);
  
     return true; 
 } 
@@ -62,6 +65,16 @@ void Bot::shutdown()
     Aria::shutdown(); 
 } 
  
+void Bot::setLeftWheel(double leftWheel)
+{
+    this->leftWheel = leftWheel;
+}
+
+void Bot::setRightWheel(double rightWheel)
+{
+    this->rightWheel = rightWheel;
+}
+
 void Bot::readingLaser()
 { 
     if (this->isConnected() && sick.isConnected()) { 
@@ -86,6 +99,7 @@ void Bot::readingSonar()
         sonar.clear();
         for (int i = 0; i <= 7; i++)
             sonar.push_back(*this->getSonarReading(i));
+        this->reading();
         this->unlock();
     }
 }
@@ -95,39 +109,39 @@ vector<ArSensorReading> Bot::getSonar()
     return sonar;
 }
 
+void Bot::doExploration()
+{
+    if (!this->start()) {
+        return;
+    }
+    while (Aria::getRunning()) {
+        this->readingSonar();
+        this->moveAlt(leftWheel, rightWheel);
+        ArUtil::sleep(500);
+    }
+}
+
 void Bot::doTeleOp()
 { 
     if (!this->start()) { 
         return; 
     } 
-    double rightW, leftW; 
-    while (Aria::getRunning()) { 
-        leftW = 0; 
-        rightW = 0; 
+    while (Aria::getRunning()) {         
+        this->lock();
         if (Keyboard::getInstance()->isArrowUp()) { 
-            leftW = velForward; 
-            rightW = velForward; 
-        } 
+            this->move(200);
+        }
         if (Keyboard::getInstance()->isArrowDown()) { 
-            leftW = 0; 
-            rightW = 0; 
-        } 
+            this->move(-200);
+        }
         if (Keyboard::getInstance()->isArrowLeft()) { 
-            if (Keyboard::getInstance()->isArrowUp()) { 
-                leftW = velForward*0.1; 
-            } else { 
-                rightW = velForward*0.1; 
-            } 
-        } 
+            this->setDeltaHeading(15);
+        }
         if (Keyboard::getInstance()->isArrowRight()) { 
-            if (Keyboard::getInstance()->isArrowUp()) { 
-                rightW = velForward*0.1; 
-            } else { 
-                leftW = velForward*0.1; 
-            } 
-        } 
+            this->setDeltaHeading(-15);
+        }
+        this->unlock();
         this->readingSonar();
-        this->move(leftW, rightW); 
         ArUtil::sleep(500); 
     } 
 } 
@@ -154,11 +168,11 @@ void Bot::doWallFollowing()
         rightWall = (rightReading < range); 
         following = false; 
         if (frontWall) { 
-            this->move(0, 0); 
+            this->moveAlt(0, 0);
             if (rightWall) {//turning left 
-                this->move(velForward*0.1, velForward); 
+                this->moveAlt(velForward*0.1, velForward);
             } else {//default or left wall, turn right 
-                this->move(velForward, velForward*0.1); 
+                this->moveAlt(velForward, velForward*0.1);
             } 
         } 
  
@@ -177,13 +191,13 @@ void Bot::doWallFollowing()
  
         if (following == false) { 
             if (leftFollowing) {//small turn, just checking if it was a sharp wall edge 
-                this->move(velForward*0.1, velForward); 
+                this->moveAlt(velForward*0.1, velForward);
                 leftFollowing = false; 
             } else if (rightFollowing) { 
-                this->move(velForward, velForward*0.1); 
+                this->moveAlt(velForward, velForward*0.1);
                 rightFollowing = false; 
             } else {//wander 
-                this->move(velForward, velForward); 
+                this->moveAlt(velForward, velForward);
             } 
         } 
         ArUtil::sleep(1000*timeInterval); 
@@ -204,16 +218,15 @@ void Bot::correctWithPID(double pid)
     } else if (pid < -v1) { 
         e2 = v2; 
     } 
-    this->move(v1-e1, v2-e2); 
+    this->moveAlt(v1-e1, v2-e2);
 } 
  
-void Bot::move(double leftW, double rightW) 
+void Bot::moveAlt(double leftW, double rightW)
 { 
     this->lock();
     this->setVel2(leftW, rightW); 
-    this->moving();
     this->unlock(); 
-} 
+}
  
 double Bot::getVelForward() 
 { 

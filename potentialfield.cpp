@@ -2,11 +2,12 @@
 
 double PotentialField::min = 0;
 double PotentialField::max = 0;
+double PotentialField::target = 0;
 double PotentialField::obstacle = 0;
 
 PotentialField::PotentialField()
 {
-    potential = -PotentialField::obstacle;
+    potential = PotentialField::obstacle*-1;
 }
 
 void PotentialField::setPotential(double potential)
@@ -19,7 +20,25 @@ double PotentialField::getPotential()
     return potential;
 }
 
+void PotentialField::setTh(double th)
+{
+    this->th = th;
+}
 
+double PotentialField::getTh()
+{
+    return th;
+}
+
+void PotentialField::setError(double error)
+{
+    this->error = error;
+}
+
+double PotentialField::getError()
+{
+    return error;
+}
 
 
 

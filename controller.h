@@ -23,6 +23,7 @@ private:
     OccupancyGrid *grid; 
     QThread *thread; 
     void showView(); 
+    void updateBot();
 signals: 
  
 public slots: 

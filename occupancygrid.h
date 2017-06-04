@@ -26,8 +26,8 @@ public:
     void bayesianProbability(double r, double R, double alpha, double beta);
     Histogramic *getHistogramic();
     void setHistogramic();
-    void getPotentialField();
-    void updatePotentialField(double potential);
+    PotentialField *getPotentialField();
+    void updatePotentialField(double potential, double th);
 private:
     double sensorId;
     bool changed;
@@ -54,6 +54,7 @@ public:
     void updateWithBayesian(Bot *bot);
     void updateWithHistogramic(Bot *bot);
     void updatePotentialFields();
+    void calculatePotential(double x, double y);
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 
