@@ -53,7 +53,7 @@ public:
     void reset(double botx, double boty);
     void updateWithBayesian(Bot *bot);
     void updateWithHistogramic(Bot *bot);
-    void updatePotentialFields();
+    void updatePotentialFields(Bot *bot);
     void calculatePotential(double x, double y);
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 

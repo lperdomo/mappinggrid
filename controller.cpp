@@ -25,8 +25,8 @@ void Controller::setBot(Bot *bot)
 { 
     this->bot = bot; 
     this->connect(this->bot, SIGNAL(reading()), this, SLOT(update()));
-    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
-    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
+    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
+    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
     //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doWallFollowing())); 
     this->bot->moveToThread(thread); 
 } 
@@ -40,7 +40,7 @@ void Controller::update()
 {
     //grid->updateWithBayesian(bot);
     grid->updateWithHistogramic(bot);
-    grid->updatePotentialFields();
+    grid->updatePotentialFields(bot);
     this->updateBot();
     this->showView();
 } 
@@ -60,13 +60,23 @@ void Controller::updateBot()
            boty = round(bot->getY()/grid->getCellScale()),
            botth = bot->getTh();
 
-    double rad = (grid->at(botx, boty)->getPotentialField()->getTh()-botth)*M_PI/180.0;
+    double degree = fmod((grid->at(botx, boty)->getPotentialField()->getTh()-botth+180+360), 360)-180;
+    double rad = degree*(M_PI/180);
+    if (degree <= 90) {
+        bot->setLeftWheel(50-50*sin(rad));
+        bot->setRightWheel(50+50*sin(rad));
+    } else {
+        bot->setLeftWheel(10-20*sin(rad));
+        bot->setRightWheel(10+20*sin(rad));
+    }
+
+    /*double rad = (grid->at(botx, boty)->getPotentialField()->getTh()-botth)*M_PI/180.0;
     if (fabs(rad) > M_PI/6) {
-        std::cout << "sei la" << std::endl;
         rad = M_PI/2*rad/rad;
     }
-    bot->setLeftWheel(50+50*sin(rad));
-    bot->setRightWheel(50-50*sin(rad));
+    bot->setLeftWheel(50-50*sin(rad));
+    bot->setRightWheel(50+50*sin(rad));*/
+
 }
 
 /*   double celRange = 2*30000/MAP_LENGTH_WORLD;
