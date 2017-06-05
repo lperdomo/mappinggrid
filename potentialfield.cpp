@@ -1,9 +1,8 @@
 #include "potentialfield.h"
 
-double PotentialField::min = 0;
-double PotentialField::max = 0;
 double PotentialField::target = 0;
-double PotentialField::obstacle = 0;
+double PotentialField::obstacle = 1;
+
 
 PotentialField::PotentialField()
 {

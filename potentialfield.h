@@ -15,8 +15,6 @@ public:
     double getError();
     static double obstacle;
     static double target;
-    static double min;
-    static double max;
 private:
     double potential;
     double th;

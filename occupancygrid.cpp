@@ -9,14 +9,6 @@ OccupancyGrid::OccupancyGrid(double width, double height, double cellSize, doubl
     this->height = height; 
     this->cellSize = cellSize; 
     this->cellScale = cellScale;
-    //PotentialField::min = cellScale;
-    //PotentialField::max = cellScale/cos(M_PI*45.0/180.0);
-    //PotentialField::obstacle = width*height*PotentialField::max*2;
-    //PotentialField::obstacle = width*height*cellScale/cos(M_PI*45.0/180.0)*2;
-    //PotentialField::target = PotentialField::obstacle*-1;
-    PotentialField::target = 0;
-    PotentialField::obstacle = 1;
-
 } 
  
 OccupancyGrid::~OccupancyGrid() 
@@ -61,64 +53,6 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
         matrix[x][y]->setSensorId(sensorId);
     } 
 }
-
-/*void OccupancyGrid::updateWithBayesianOld(Bot *bot)
-{
-    double rangeA = (3000+200)/cellScale,
-           rangeB = (1500-200)/cellScale,
-           rangeC = 5000/cellScale,
-           botx = round(bot->getX()/cellScale),
-           boty = round(bot->getY()/cellScale),
-           botth = bot->getTh()*-1;
-
-    vector<ArSensorReading> sensor = bot->getSonar();
-
-    double botWidth = (botx+rangeC > this->getWidth()/2 ? this->getWidth()/2 : botx+rangeC),
-           botHeight = (boty+rangeC > this->getHeight()/2 ? this->getHeight()/2 : boty+rangeC);
-
-
-    for (double x = botx-rangeC-1; x <= botWidth+1; x++) {
-        for (double y = boty-rangeC-1; y <= botHeight+1; y++) {
-            double range = Util::distanceBetweenPoints(x, y, botx, boty, botWidth, botHeight),
-                   angle = Util::angleBetweenPoints(x, y, botx, boty, botWidth, botHeight);
-
-            if (x == botx && y == boty) {
-                this->assign(x, y, 0);
-            } else if (range <= rangeC) {
-                bool atRange = false;
-                for (int i = 0; (i < sensor.size() && atRange == false); i++) {
-                    double angleSonar = sensor.at(i).getSensorTh()*-1,
-                           rangeSensor = sensor.at(i).getRange()/cellScale;
-
-                    if (i == 0 || i == 7) atRange = Util::isAngleAtRange(botth+angleSonar, angle, 15);
-                    else if (i >= 1 && i <= 6)
-                        if (Util::isAngleAtRange(botth+angleSonar, angle, 15)
-                            && !Util::isAngleAtRange(botth+sensor.at(i+1).getSensorTh()*-1, angle, 10)
-                            && !Util::isAngleAtRange(botth+sensor.at(i-1).getSensorTh()*-1, angle, 10)) atRange = true;
-                        else if (Util::isAngleAtRange(botth+angleSonar+10, angle, 0.5)) atRange = true;
-
-                    if (atRange) {
-                        if (range >= rangeB && range <= rangeA) {
-                            this->assign(x, y, i+1);
-                            if (rangeSensor >= rangeB && rangeSensor <= rangeA) this->at(x, y)->setRegion(1);
-                            else this->at(x, y)->setRegion(3);
-                            this->at(x, y)->bayesianProbability(range, rangeC, fabs(angle-botth-angleSonar), 15);
-                        } else if (range < rangeB) {
-                            this->assign(x, y, i+1.5);
-                            if (rangeSensor < rangeB) this->at(x, y)->setRegion(2);
-                            else this->at(x, y)->setRegion(3);
-                            this->at(x, y)->bayesianProbability(range, rangeC, fabs(angle-botth-angleSonar), 15);
-                        } else {
-                            this->assign(x, y, i+1.5);
-                            this->at(x, y)->setRegion(3);
-                        }
-                    }
-                }
-                if (atRange == false && this->at(x, y)) this->assign(x, y, -1);
-            } else if (this->at(x, y)) this->assign(x, y, -1);
-        }
-    }
-}*/
 
 void OccupancyGrid::reset(double botx, double boty)
 {
@@ -292,9 +226,6 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
            botWidth = (botx+rangeMax > width/2 ? width/2 : botx+rangeMax),
            botHeight = (boty+rangeMax > height/2 ? height/2 : boty+rangeMax);
 
-    //for (double x = botx-rangeMax-2; x <= botWidth+2; x++) {
-    //    for (double y = boty-rangeMax-2; y <= botHeight+2; y++) {
-
     double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
     //double left = botWidth*-1, right = botWidth, top = botHeight*-1, bottom = botHeight;
 
@@ -382,25 +313,7 @@ void OccupancyGrid::calculatePotential(double x, double y)
 
                 gauss = (p1+p2+p3+p4)/4.0;
 
-                if (gauss > PotentialField::obstacle) {
-                    std::cout << "x" << x+1 << " y" << y << " p1=" << p1 << std::endl;
-                    std::cout << "x" << x-1 << " y" << y << " p2=" << p2 << std::endl;
-                    std::cout << "x" << x << " y" << y+1 << " p3=" << p3 << std::endl;
-                    std::cout << "x" << x << " y" << y-1 << " p4=" << p4 << std::endl;
-                    std::cout << "rec x" << x << " y" << y << " gauss=" << gauss << std::endl;
-                }
-
-                //dx = -(p1-p2);
-                //dy = -(p4-p3);
-                /*if (fabs(dy) > fabs(dx)) {
-                    dx = 0;
-                } else {
-                    dy = 0;
-                }*/
-                //double th = atan2(dy, dx)*180/M_PI;
                 double th = atan2(-(p3-p4),-(p1-p2))*180/M_PI;
-                //double th = atan2((p3-p4),(p1-p2))*180/M_PI;
-                //std::cout << "gauss" << gauss << " th" << th << std::endl;
                 this->at(x, y)->getPotentialField()->setError(pow(this->at(x, y)->getPotentialField()->getPotential()-gauss, 2));
                 this->at(x, y)->getPotentialField()->setPotential(gauss);
                 this->at(x, y)->getPotentialField()->setTh(th);
@@ -477,13 +390,6 @@ void OccupancyGridCell::bayesianProbability(double r, double R, double alpha, do
         else if (region == 2) bayesian->setEmptyRead(0.5*((R-r)/2*R + (beta-alpha)/beta)*0.98);//range division multiplied, less false positives in region B
         else bayesian->setEmptyRead(Bayesian::max);
         bayesian->calculate();
-
-        if (region == 2 && bayesian->getOccupied() > 0.5) {
-        std::cout << "rangeSensor" << r << " maximo" << R << " alpha" << alpha << " beta" << beta << std::endl;
-        std::cout << "prob " << 0.5*((R-r)/R + (beta-alpha)/beta) << std::endl;
-        std::cout << "result" << bayesian->getOccupied() << std::endl;
-        }
-
     }
 }
 
