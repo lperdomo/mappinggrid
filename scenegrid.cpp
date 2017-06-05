@@ -9,12 +9,12 @@ SceneGridItem::SceneGridItem(OccupancyGrid *grid) :
     QGraphicsItem() 
 { 
     this->grid = grid; 
-} 
- 
-SceneGridItem::~SceneGridItem() 
-{ 
-} 
- 
+}
+
+SceneGridItem::~SceneGridItem()
+{
+}
+
 QRectF SceneGridItem::boundingRect() const 
 { 
     return QRectF((grid->getWidth()/2)*-1, (grid->getHeight()/2)*-1, grid->getWidth()/2, grid->getHeight()/2); 
@@ -128,7 +128,9 @@ void SceneGrid::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_Left) { 
         Keyboard::getInstance()->setArrowLeft(true); 
     } else if (event->key() == Qt::Key_Right) { 
-        Keyboard::getInstance()->setArrowRight(true); 
+        Keyboard::getInstance()->setArrowRight(true);
+    } else if (event->key() == Qt::Key_Q) {
+        Keyboard::getInstance()->setQ(true);
     } 
 } 
  
@@ -142,5 +144,7 @@ void SceneGrid::keyReleaseEvent(QKeyEvent *event)
         Keyboard::getInstance()->setArrowLeft(false); 
     } else if (event->key() == Qt::Key_Right) { 
         Keyboard::getInstance()->setArrowRight(false); 
-    } 
+    } else if (event->key() == Qt::Key_Q) {
+        Keyboard::getInstance()->setQ(false);
+    }
 } 

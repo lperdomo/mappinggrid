@@ -14,13 +14,16 @@ public:
     bool isArrowLeft(); 
     void setArrowRight(bool pressed); 
     bool isArrowRight(); 
+    void setQ(bool pressed);
+    bool isQ();
     static Keyboard *getInstance(); 
     static Keyboard *instance; 
 private: 
     bool arrowUp; 
     bool arrowDown; 
     bool arrowLeft; 
-    bool arrowRight; 
+    bool arrowRight;
+    bool q;
 }; 
  
 #endif // KEYBOARD_H 

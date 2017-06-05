@@ -76,7 +76,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
     vector<ArSensorReading> sensor = bot->getSonar();
 
     double rangeMax = 5000/cellScale,
-           tolerance = 200/cellScale,
+           tolerance = 100/cellScale,
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh();

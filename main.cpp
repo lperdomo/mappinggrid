@@ -6,10 +6,10 @@
 int main(int argc, char *argv[]) 
 { 
     QApplication a(argc, argv); 
- 
+
     Controller controller(700, 700, 8, 200);
     controller.setBot(new Bot(&argc, argv)); 
     controller.run(); 
- 
+
     return a.exec(); 
 } 

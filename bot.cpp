@@ -32,14 +32,14 @@ bool Bot::start()
         return false; 
     } 
  
-    laserConn.setupLaser(&sick); 
+    laserConn.setupLaser(&sick);
     if (!laserConn.connectLaser(&sick)) { 
         ArLog::log(ArLog::Terse, "sick: failed to connect with"); 
         return false; 
     }
 
     ArLog::log(ArLog::Normal,"bot: sucessfully connected"); 
-    sick.runAsync(); 
+    sick.runAsync();
     this->runAsync(true); 
  
     this->lock(); 
@@ -117,8 +117,12 @@ void Bot::doExploration()
     while (Aria::getRunning()) {
         this->readingSonar();
         this->moveAlt(leftWheel, rightWheel);
+        if (Keyboard::getInstance()->isQ()) {
+            break;
+        }
         ArUtil::sleep(500);
     }
+    this->shutdown();
 }
 
 void Bot::doTeleOp()
@@ -129,21 +133,25 @@ void Bot::doTeleOp()
     while (Aria::getRunning()) {         
         this->lock();
         if (Keyboard::getInstance()->isArrowUp()) { 
-            this->move(200);
+            this->move(100);
         }
         if (Keyboard::getInstance()->isArrowDown()) { 
-            this->move(-200);
+            this->move(-100);
         }
         if (Keyboard::getInstance()->isArrowLeft()) { 
-            this->setDeltaHeading(15);
+            this->setDeltaHeading(10);
         }
         if (Keyboard::getInstance()->isArrowRight()) { 
-            this->setDeltaHeading(-15);
+            this->setDeltaHeading(-10);
+        }
+        if (Keyboard::getInstance()->isQ()) {
+            break;
         }
         this->unlock();
         this->readingSonar();
         ArUtil::sleep(500); 
-    } 
+    }
+    this->shutdown();
 } 
  
 void Bot::doWallFollowing() 

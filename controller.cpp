@@ -25,8 +25,8 @@ void Controller::setBot(Bot *bot)
 { 
     this->bot = bot; 
     this->connect(this->bot, SIGNAL(reading()), this, SLOT(update()));
-    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
-    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
+    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
+    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
     //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doWallFollowing())); 
     this->bot->moveToThread(thread); 
 } 
@@ -38,8 +38,8 @@ void Controller::run()
  
 void Controller::update() 
 {
-    grid->updateWithBayesian(bot);
-    //grid->updateWithHistogramic(bot);
+    //grid->updateWithBayesian(bot);
+    grid->updateWithHistogramic(bot);
     grid->updatePotentialFields(bot);
     this->updateBot();
     this->showView();

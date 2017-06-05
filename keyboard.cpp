@@ -7,7 +7,8 @@ Keyboard::Keyboard()
     arrowUp = false; 
     arrowDown = false; 
     arrowLeft = false; 
-    arrowRight = false; 
+    arrowRight = false;
+    q = false;
 } 
  
 Keyboard::~Keyboard() 
@@ -53,7 +54,17 @@ bool Keyboard::isArrowRight()
 { 
     return arrowRight; 
 } 
- 
+
+void Keyboard::setQ(bool pressed)
+{
+    q = pressed;
+}
+
+bool Keyboard::isQ()
+{
+    return q;
+}
+
 Keyboard *Keyboard::getInstance() 
 { 
     if (!instance) { 
