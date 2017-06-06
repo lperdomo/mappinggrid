@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 { 
     QApplication a(argc, argv); 
 
-    Controller controller(700, 700, 8, 200);
+    Controller controller(1000, 1000, 8, 100);
     controller.setBot(new Bot(&argc, argv)); 
     controller.run(); 
 

@@ -312,7 +312,6 @@ void OccupancyGrid::calculatePotential(double x, double y)
                 }
 
                 gauss = (p1+p2+p3+p4)/4.0;
-
                 double th = atan2(-(p3-p4),-(p1-p2))*180/M_PI;
                 this->at(x, y)->getPotentialField()->setError(pow(this->at(x, y)->getPotentialField()->getPotential()-gauss, 2));
                 this->at(x, y)->getPotentialField()->setPotential(gauss);

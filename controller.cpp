@@ -7,7 +7,7 @@ Controller::Controller(double width, double height, double cellSize, double cell
     QObject() 
 { 
     grid = new OccupancyGrid(width, height, cellSize, cellScale); 
-    scene = new SceneGrid((width/2)*-1, (height/2)*-1, width, height, grid); 
+    scene = new SceneGrid((width/2)*2*-1, (height/2)*2*-1, width*2, height*2, grid);
     view = new QGraphicsView(scene); 
     thread = new QThread(); 
 } 
@@ -25,8 +25,8 @@ void Controller::setBot(Bot *bot)
 { 
     this->bot = bot; 
     this->connect(this->bot, SIGNAL(reading()), this, SLOT(update()));
-    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
-    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
+    this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
+    //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
     //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doWallFollowing())); 
     this->bot->moveToThread(thread); 
 } 

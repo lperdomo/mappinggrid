@@ -17,15 +17,17 @@ SceneGridItem::~SceneGridItem()
 
 QRectF SceneGridItem::boundingRect() const 
 { 
-    return QRectF((grid->getWidth()/2)*-1, (grid->getHeight()/2)*-1, grid->getWidth()/2, grid->getHeight()/2); 
+    return QRectF((grid->getWidth()/2)*-1, (grid->getHeight()/2)*-1, (grid->getWidth()/2), (grid->getHeight()/2));
 } 
  
 void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) 
 { 
     QRectF rect = boundingRect(); 
-    double size = grid->getCellSize(); 
-    for (double x = rect.left(); x < rect.width(); x++) { 
-        for (double y = rect.top(); y < rect.height(); y++) { 
+    double size = grid->getCellSize()
+          , limitx = grid->getWidth()/2
+          , limity = grid->getHeight()/2;
+    for (double x = limitx*-1; x < limitx; x++) {
+        for (double y = limity*-1; y < limity; y++) {
             if (grid->at(x, y)) { 
                 double occupied = 0;
                 if (grid->at(x, y)->getBayesian() || grid->at(x, y)->getHistogramic()) {
@@ -101,7 +103,7 @@ void SceneGridItem::drawColoredRect(QPainter *painter, double x, double y, QColo
 }
  
 SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid) : 
-    QGraphicsScene(x, y, width, height) 
+    QGraphicsScene(x, y, width, height)
 { 
     gridItem = new SceneGridItem(grid); 
     this->addItem(gridItem);
