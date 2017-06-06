@@ -32,14 +32,14 @@ bool Bot::start()
         return false; 
     } 
  
-    laserConn.setupLaser(&sick);
+    /*qqlaserConn.setupLaser(&sick);
     if (!laserConn.connectLaser(&sick)) { 
         ArLog::log(ArLog::Terse, "sick: failed to connect with"); 
         return false; 
-    }
+    }*/
 
     ArLog::log(ArLog::Normal,"bot: sucessfully connected"); 
-    sick.runAsync();
+    //sick.runAsync();
     this->runAsync(true); 
  
     this->lock(); 
@@ -51,19 +51,20 @@ bool Bot::start()
     return true; 
 } 
  
-void Bot::stop() 
+void Bot::stop2()
 { 
-    this->stop(); 
+    this->lock();
     this->disableMotors(); 
+    this->unlock();
 } 
  
-void Bot::shutdown() 
-{ 
-    this->stop(); 
+void Bot::shutdown()
+{
+    this->stop2();
     this->stopRunning(); 
-    this->waitForRunExit(); 
-    Aria::shutdown(); 
-} 
+    this->waitForRunExit();
+    Aria::shutdown();
+}
  
 void Bot::setLeftWheel(double leftWheel)
 {
@@ -122,7 +123,7 @@ void Bot::doExploration()
         }
         ArUtil::sleep(500);
     }
-    this->shutdown();
+    if (Keyboard::getInstance()->isQ()) this->shutdown();
 }
 
 void Bot::doTeleOp()
@@ -151,7 +152,7 @@ void Bot::doTeleOp()
         this->readingSonar();
         ArUtil::sleep(500); 
     }
-    this->shutdown();
+    if (Keyboard::getInstance()->isQ()) this->shutdown();
 } 
  
 void Bot::doWallFollowing() 

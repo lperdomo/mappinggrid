@@ -56,7 +56,7 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
 
 void OccupancyGrid::reset(double botx, double boty)
 {
-    double rangeMax = 5000/cellScale,
+    double rangeMax = round(5000/cellScale),
            botWidth = (botx+rangeMax > width/2 ? width/2 : botx+rangeMax),
            botHeight = (boty+rangeMax > height/2 ? height/2 : boty+rangeMax);
 
@@ -75,8 +75,8 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
-    double rangeMax = 5000/cellScale,
-           tolerance = 100/cellScale,
+    double rangeMax = round(2000/cellScale),
+           tolerance = round(100/cellScale),
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh();
@@ -140,7 +140,7 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
-    double rangeMax = 5000/cellScale,
+    double rangeMax = round(1500/cellScale),
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh(),
@@ -210,7 +210,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
                             this->at(x, y)->getPotentialField()->setTh(0);
                         }
                     } else if (this->at(x, y)->getHistogramic()) {
-                        if (this->at(x, y)->getHistogramic()->getCV() >= 3) {
+                        if (this->at(x, y)->getHistogramic()->getCV() > 6) {
                             this->at(x, y)->getPotentialField()->setPotential(PotentialField::obstacle);
                             this->at(x, y)->getPotentialField()->setTh(0);
                         }
@@ -220,7 +220,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
         }
     }
 
-    double rangeMax = 5000/cellScale,
+    double rangeMax = round(5000/cellScale),
            botx = bot->getX()/cellScale,
            boty = bot->getY()/cellScale,
            botWidth = (botx+rangeMax > width/2 ? width/2 : botx+rangeMax),

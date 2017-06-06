@@ -146,7 +146,8 @@ void SceneGrid::keyReleaseEvent(QKeyEvent *event)
         Keyboard::getInstance()->setArrowLeft(false); 
     } else if (event->key() == Qt::Key_Right) { 
         Keyboard::getInstance()->setArrowRight(false); 
-    } else if (event->key() == Qt::Key_Q) {
-        Keyboard::getInstance()->setQ(false);
     }
+    /*else if (event->key() == Qt::Key_Q) {
+        Keyboard::getInstance()->setQ(false);
+    }*/
 } 

@@ -15,8 +15,8 @@ public:
     explicit Bot(int *argc, char **argv); 
     ~Bot(); 
     bool start(); 
-    void shutdown(); 
-    void stop(); 
+    void shutdown();
+    void stop2();
     void readingLaser();
     void readingSonar();
     vector<ArSensorReading> getSonar();
