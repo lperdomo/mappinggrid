@@ -24,7 +24,7 @@ Bot::~Bot()
 bool Bot::start() 
 { 
     Aria::init(); 
-    //parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
+    parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
     this->addRangeDevice(&sick);
     botConn.parseArgs(); 
     if (!botConn.connectRobot()) { 
@@ -47,7 +47,7 @@ bool Bot::start()
     this->unlock();
 
     ArUtil::sleep(500);
- 
+
     return true; 
 } 
  
@@ -74,6 +74,11 @@ void Bot::setLeftWheel(double leftWheel)
 void Bot::setRightWheel(double rightWheel)
 {
     this->rightWheel = rightWheel;
+}
+
+bool Bot::isStarting()
+{
+    return starting;
 }
 
 void Bot::readingLaser()
@@ -115,9 +120,15 @@ void Bot::doExploration()
     if (!this->start()) {
         return;
     }
+    starting = true;
     while (Aria::getRunning()) {
         this->readingSonar();
-        this->moveAlt(leftWheel, rightWheel);
+        //if (starting == true) {
+        //    this->moveAlt(0, 20);
+        //    if (this->getTh() < 0) starting = false;
+        //} else {
+            this->moveAlt(leftWheel, rightWheel);
+        //}
         if (Keyboard::getInstance()->isQ()) {
             break;
         }

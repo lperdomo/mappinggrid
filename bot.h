@@ -25,6 +25,7 @@ public:
     double getVelForward();
     void setLeftWheel(double leftWheel);
     void setRightWheel(double rightWheel);
+    bool isStarting();
 private: 
     ArRobotConnector botConn; 
     ArArgumentParser parser; 
@@ -32,6 +33,7 @@ private:
     ArLaserConnector laserConn;
     vector<ArSensorReading> sonar;
     vector<ArSensorReading> laser;
+    bool starting;
     double velForward;
     double leftWheel;
     double rightWheel;

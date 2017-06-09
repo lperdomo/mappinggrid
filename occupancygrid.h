@@ -60,7 +60,8 @@ private:
     double width; 
     double height; 
     double cellSize;
-    double cellScale; 
+    double cellScale;
+    unsigned potentialIterations;
 signals: 
  
 public slots: 

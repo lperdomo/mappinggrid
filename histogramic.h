@@ -10,6 +10,7 @@ public:
     void setCV(int cv);
     int getCV();
     void addCV();
+    void addAdjacencyCV();
     void subCV();
     double proportionalCV();
 private:

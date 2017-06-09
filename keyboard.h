@@ -16,7 +16,9 @@ public:
     bool isArrowRight(); 
     void setQ(bool pressed);
     bool isQ();
-    static Keyboard *getInstance(); 
+    void setC(bool pressed);
+    bool isC();
+    static Keyboard *getInstance();
     static Keyboard *instance; 
 private: 
     bool arrowUp; 
@@ -24,6 +26,7 @@ private:
     bool arrowLeft; 
     bool arrowRight;
     bool q;
+    bool c;
 }; 
  
 #endif // KEYBOARD_H 

@@ -16,6 +16,8 @@ int Histogramic::getCV()
 void Histogramic::setCV(int cv)
 {
     this->cv = cv;
+    if (this->cv > Histogramic::max) this->cv = Histogramic::max;
+    if (this->cv < Histogramic::min) this->cv = Histogramic::min;
 }
 
 void Histogramic::addCV()
@@ -28,6 +30,12 @@ void Histogramic::subCV()
 {
     cv -= 1;
     if (cv < Histogramic::min) cv = Histogramic::min;
+}
+
+void Histogramic::addAdjacencyCV()
+{
+    cv += 1;
+    if (cv > Histogramic::max) cv = Histogramic::max;
 }
 
 double Histogramic::proportionalCV()

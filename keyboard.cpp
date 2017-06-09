@@ -9,6 +9,7 @@ Keyboard::Keyboard()
     arrowLeft = false; 
     arrowRight = false;
     q = false;
+    c = false;
 } 
  
 Keyboard::~Keyboard() 
@@ -64,6 +65,17 @@ bool Keyboard::isQ()
 {
     return q;
 }
+
+void Keyboard::setC(bool pressed)
+{
+    c = pressed;
+}
+
+bool Keyboard::isC()
+{
+    return c;
+}
+
 
 Keyboard *Keyboard::getInstance() 
 { 

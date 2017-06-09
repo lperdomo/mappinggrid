@@ -22,7 +22,6 @@ QRectF SceneGridItem::boundingRect() const
  
 void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) 
 { 
-    QRectF rect = boundingRect(); 
     double size = grid->getCellSize()
           , limitx = grid->getWidth()/2
           , limity = grid->getHeight()/2;
@@ -39,35 +38,36 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                     else if (cor <= 0) cor = 1;
                     painter->setBrush(QBrush(QColor(cor, cor, cor, 255)));
                     painter->drawRect(size*x, size*y*-1, size, size);
-                    if (size >= 8) {
-                        if (grid->at(x, y)->getPotentialField()) {
-                            double cx = size*x+(size/2), cy = size*y-(size/2),
-                                   nx = cx+((size/3)*(cos(grid->at(x, y)->getPotentialField()->getTh()*M_PI/180))),
-                                   ny = cy+((size/3)*(sin(grid->at(x, y)->getPotentialField()->getTh()*M_PI/180)));
-                            if (grid->at(x, y)->getPotentialField()->getPotential() != PotentialField::obstacle) {
-                                painter->setPen(QPen(Qt::black));
-                                painter->setBrush(QBrush(Qt::black));
-                                painter->drawLine(cx, cy*-1, nx, ny*-1);
-                                painter->drawRect(nx, ny*-1, 1, 1);
 
-                                /*
-                                int core = 255-(255*grid->at(x, y)->getPotentialField()->getPotential());
-                                if (core >= 255) core = 254;
-                                else if (core <= 0) core = 1;
-                                painter->setBrush(QBrush(QColor(0, cor, 0, 255)));
-                                painter->drawRect(size*x, size*y*-1, size, size);
-                                painter->drawText(size*x, cy*-1, QString::number(grid->at(x, y)->getPotentialField()->getPotential()));
-                                */
-                            } else {
-                                /*
-                                painter->setBrush(QBrush(QColor(0, 0, 0, 255)));
-                                painter->drawRect(size*x, size*y*-1, size, size);
-                                painter->setBrush(QBrush(QColor(255, 255, 255, 255)));
-                                painter->setPen(QPen(Qt::white));
-                                painter->drawText(size*x, cy*-1, QString::number(grid->at(x, y)->getPotentialField()->getPotential()));
-                                */
-                            }
+                    if (grid->at(x, y)->getPotentialField()) {
+                        double cx = size*x+(size/2), cy = size*y-(size/2),
+                               nx = cx+((size/3)*(cos(grid->at(x, y)->getPotentialField()->getTh()*M_PI/180))),
+                               ny = cy+((size/3)*(sin(grid->at(x, y)->getPotentialField()->getTh()*M_PI/180)));
+                        if (Keyboard::getInstance()->isC() || size < 8) {
+                            int core;
+                            if (grid->at(x, y)->getPotentialField()->getPotential() == PotentialField::obstacle) core = 0;
+                            else core = 255-(200*grid->at(x, y)->getPotentialField()->getPotential());
+                            if (core >= 255) core = 254;
+                            else if (core <= 0) core = 1;
+                            painter->setPen(QPen(QColor(220, 220, 220)));
+                            painter->setBrush(QBrush(QColor(0, core, 0, 225)));
+                            painter->drawRect(size*x, size*y*-1, size, size);
+                        } else if (grid->at(x, y)->getPotentialField()->getPotential() != PotentialField::obstacle && size >= 8) {
+                            painter->setPen(QPen(Qt::black));
+                            painter->setBrush(QBrush(Qt::black));
+                            painter->drawLine(cx, cy*-1, nx, ny*-1);
+                            painter->drawRect(nx, ny*-1, 1, 1);
                         }
+                            //painter->drawText(size*x, cy*-1, QString::number(grid->at(x, y)->getPotentialField()->getPotential()));
+
+                        //} else {
+                            /*
+                            painter->setBrush(QBrush(QColor(0, 0, 0, 255)));
+                            painter->drawRect(size*x, size*y*-1, size, size);
+                            painter->setBrush(QBrush(QColor(255, 255, 255, 255)));
+                            painter->setPen(QPen(Qt::white));
+                            painter->drawText(size*x, cy*-1, QString::number(grid->at(x, y)->getPotentialField()->getPotential()));
+                            */
                     }
                 }
 
@@ -133,7 +133,10 @@ void SceneGrid::keyPressEvent(QKeyEvent *event)
         Keyboard::getInstance()->setArrowRight(true);
     } else if (event->key() == Qt::Key_Q) {
         Keyboard::getInstance()->setQ(true);
-    } 
+    } else if (event->key() == Qt::Key_C) {
+        if (Keyboard::getInstance()->isC()) Keyboard::getInstance()->setC(false);
+        else Keyboard::getInstance()->setC(true);
+    }
 } 
  
 void SceneGrid::keyReleaseEvent(QKeyEvent *event) 

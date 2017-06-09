@@ -9,6 +9,7 @@ OccupancyGrid::OccupancyGrid(double width, double height, double cellSize, doubl
     this->height = height; 
     this->cellSize = cellSize; 
     this->cellScale = cellScale;
+    potentialIterations = 0;
 } 
  
 OccupancyGrid::~OccupancyGrid() 
@@ -140,12 +141,12 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
-    double rangeMax = round(1500/cellScale),
+    double rangeMax = round(2000/cellScale),
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh(),
            angleSonar, rangeSensor;
-
+    int GRO;
     this->reset(botx, boty);
 
     for (int i = 0; i < sensor.size(); i++) {
@@ -156,20 +157,21 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
             y = round(rangeSensor*sin((botth-angleSonar)*M_PI/180));
 
         this->assign(x+botx, y+boty, i+1);
-        if (!this->at(x+botx, y+boty)->getHistogramic()) this->at(x+botx, y+boty)->setHistogramic();
+        GRO = 0;
         if (rangeSensor < rangeMax) {
+            if (!this->at(x+botx, y+boty)->getHistogramic()) this->at(x+botx, y+boty)->setHistogramic();
             this->at(x+botx, y+boty)->getHistogramic()->addCV();
-            int GRO = this->at(x+botx, y+boty)->getHistogramic()->getCV();
+            GRO = this->at(x+botx, y+boty)->getHistogramic()->getCV();
             for (int j = x-1; j < x+1; j++) {
                 for (int k = y-1; k < y+1; k++) {
                     if (!(j == x && k == y) && this->at(j+botx, k+boty)) {
                         if (this->at(j+botx, k+boty)->getHistogramic()) {
                             GRO += 0.5*this->at(j+botx, k+boty)->getHistogramic()->getCV();
+                            this->at(j+botx, k+boty)->getHistogramic()->addAdjacencyCV();//fattening walls
                         }
                     }
                 }
             }
-            GRO = min(Histogramic::max, GRO);
             //std::cout << "GRO" << GRO << std::endl;
             this->at(x+botx, y+boty)->getHistogramic()->setCV(GRO);
         }
@@ -183,8 +185,11 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
             int cellY = cell*stepY+boty;
             if (!(cellX == botx && cellY == boty)) {
                 this->assign(cellX, cellY, i+1.5);
-                if (!this->at(cellX, cellY)->getHistogramic()) this->at(cellX, cellY)->setHistogramic();
-                this->at(cellX, cellY)->getHistogramic()->subCV();
+                double range = Util::distanceBetweenPoints(cellX, cellY, botx, boty, width, height);
+                if (range < rangeMax) {
+                    if (!this->at(cellX, cellY)->getHistogramic()) this->at(cellX, cellY)->setHistogramic();
+                    if (GRO > 0) this->at(cellX, cellY)->getHistogramic()->subCV();
+                }
             }
         }
     }
@@ -195,7 +200,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
     double limitx = width/2,
            limity = height/2,
            error = 1, errorMax = 0.1;
-
+    potentialIterations++;
     for (double x = limitx*-1; x < limitx; x++)  {
         for (double y = limity*-1; y < limity; y++) {
             if (fabs(x) == fabs(limitx) || fabs(y) == fabs(limity)) {
@@ -210,7 +215,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
                             this->at(x, y)->getPotentialField()->setTh(0);
                         }
                     } else if (this->at(x, y)->getHistogramic()) {
-                        if (this->at(x, y)->getHistogramic()->getCV() > 6) {
+                        if (this->at(x, y)->getHistogramic()->getCV() > 3) {
                             this->at(x, y)->getPotentialField()->setPotential(PotentialField::obstacle);
                             this->at(x, y)->getPotentialField()->setTh(0);
                         }
@@ -228,8 +233,8 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
 
     double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
     //double left = botWidth*-1, right = botWidth, top = botHeight*-1, bottom = botHeight;
-
-    //while (error > errorMax) {
+    bool loop = true;
+    //while (loop) {
         error = 0;
         //std::cout << "error" << error << std::endl;
         for (double x = left; x < right; x++)  {
@@ -273,6 +278,11 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
                 }
             }
         }
+        //if (potentialIterations < 80) loop = false;
+        //else {
+        //    loop = error > errorMax;
+        //    std::cout << "entrou" << std::endl;
+        //}
         //std::cout << "error" << error << std::endl;
     //}
 }
@@ -282,7 +292,7 @@ void OccupancyGrid::calculatePotential(double x, double y)
     double dx, dy;
     double limitx = width/2,
            limity = height/2,
-           gauss, p1, p2, p3, p4;
+           gauss, SOR, w, p, p1, p2, p3, p4;
     if (this->at(x, y)) {
         if (this->at(x, y)->getBayesian() || this->at(x, y)->getHistogramic()) {
             if (this->at(x, y)->getPotentialField()->getPotential() != PotentialField::obstacle) {
@@ -312,10 +322,16 @@ void OccupancyGrid::calculatePotential(double x, double y)
                 }
 
                 gauss = (p1+p2+p3+p4)/4.0;
-                double th = atan2(-(p3-p4),-(p1-p2))*180/M_PI;
                 this->at(x, y)->getPotentialField()->setError(pow(this->at(x, y)->getPotentialField()->getPotential()-gauss, 2));
                 this->at(x, y)->getPotentialField()->setPotential(gauss);
-                this->at(x, y)->getPotentialField()->setTh(th);
+
+                //p = (cos(M_PI/cellSize) + cos(M_PI/cellSize))/2;
+                //w = 2/(1+sqrt(1-pow(p, 2)));
+                //SOR = this->at(x, y)->getPotentialField()->getPotential() + w/4*(p1+p2+p3+p4-4*this->at(x, y)->getPotentialField()->getPotential());
+                //this->at(x, y)->getPotentialField()->setError(pow(this->at(x, y)->getPotentialField()->getPotential()-SOR, 2));
+                //this->at(x, y)->getPotentialField()->setPotential(SOR);
+
+                this->at(x, y)->getPotentialField()->setTh(atan2(-(p3-p4),-(p1-p2))*180/M_PI);
             }
         }
     }
