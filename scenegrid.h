@@ -16,6 +16,7 @@ public:
     ~SceneGridItem(); 
     QRectF boundingRect() const; 
     OccupancyGrid *grid; 
+    double scale;
 protected: 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0); 
 private:
@@ -27,7 +28,7 @@ class SceneGrid : public QGraphicsScene
 public: 
     SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid); 
     ~SceneGrid(); 
-private: 
+private:
     SceneGridItem *gridItem; 
     void drawGrid(QPainter *painter, const QRectF &rect);
 protected: 

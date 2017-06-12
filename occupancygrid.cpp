@@ -234,7 +234,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
     double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
     //double left = botWidth*-1, right = botWidth, top = botHeight*-1, bottom = botHeight;
     bool loop = true;
-    //while (loop) {
+    while (error > errorMax) {
         error = 0;
         //std::cout << "error" << error << std::endl;
         for (double x = left; x < right; x++)  {
@@ -272,7 +272,6 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
                 this->calculatePotential(x, y);
                 if (this->at(x, y)) {
                     if (this->at(x, y)->getPotentialField()) {
-                        //std::cout << "parcial " << this->at(x, y)->getPotentialField()->getError() << std::endl;
                         error += this->at(x, y)->getPotentialField()->getError();
                     }
                 }
@@ -284,7 +283,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
         //    std::cout << "entrou" << std::endl;
         //}
         //std::cout << "error" << error << std::endl;
-    //}
+    }
 }
 
 void OccupancyGrid::calculatePotential(double x, double y)
@@ -294,8 +293,15 @@ void OccupancyGrid::calculatePotential(double x, double y)
            limity = height/2,
            gauss, SOR, w, p, p1, p2, p3, p4;
     if (this->at(x, y)) {
+        bool ocupado = false;
+        if (this->at(x, y)->getBayesian()) {
+            ocupado = (this->at(x, y)->getBayesian()->getOccupied() > 0.5);
+        } else if (this->at(x, y)->getHistogramic()) {
+            ocupado = (this->at(x, y)->getHistogramic()->getCV() > 3);
+        }
+
         if (this->at(x, y)->getBayesian() || this->at(x, y)->getHistogramic()) {
-            if (this->at(x, y)->getPotentialField()->getPotential() != PotentialField::obstacle) {
+            if (!ocupado) {
                 p1 = PotentialField::target;
                 if (this->at(x+1, y)) {
                     if (this->at(x+1, y)->getPotentialField()) {

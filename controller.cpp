@@ -51,7 +51,10 @@ void Controller::showView()
     if (!view->isVisible()) { 
         view->show(); 
     } else { 
-        view->viewport()->update(); 
+        //view->centerOn(bot->getX()*grid->getCellSize(), bot->getY()*grid->getCellSize()*-1);
+        view->viewport()->update();
+
+        //std::cout << "x " << round(bot->getX()/grid->getCellScale())*grid->getCellSize() << " y " << round(bot->getY()/grid->getCellScale())*grid->getCellSize()*-1 << std::endl;
     } 
 } 
 

@@ -8,7 +8,8 @@
 SceneGridItem::SceneGridItem(OccupancyGrid *grid) : 
     QGraphicsItem() 
 { 
-    this->grid = grid; 
+    this->grid = grid;
+    scale = 1;
 }
 
 SceneGridItem::~SceneGridItem()
@@ -22,6 +23,7 @@ QRectF SceneGridItem::boundingRect() const
  
 void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) 
 { 
+    painter->scale(scale, scale);
     double size = grid->getCellSize()
           , limitx = grid->getWidth()/2
           , limity = grid->getHeight()/2;
@@ -105,7 +107,7 @@ void SceneGridItem::drawColoredRect(QPainter *painter, double x, double y, QColo
 SceneGrid::SceneGrid(qreal x, qreal y, qreal width, qreal height, OccupancyGrid *grid) : 
     QGraphicsScene(x, y, width, height)
 { 
-    gridItem = new SceneGridItem(grid); 
+    gridItem = new SceneGridItem(grid);
     this->addItem(gridItem);
 } 
  
@@ -133,6 +135,10 @@ void SceneGrid::keyPressEvent(QKeyEvent *event)
         Keyboard::getInstance()->setArrowRight(true);
     } else if (event->key() == Qt::Key_Q) {
         Keyboard::getInstance()->setQ(true);
+    } else if (event->key() == Qt::Key_Minus) {
+        gridItem->scale -= 0.1;
+    } else if (event->key() == Qt::Key_Plus) {
+        gridItem->scale += 0.1;
     } else if (event->key() == Qt::Key_C) {
         if (Keyboard::getInstance()->isC()) Keyboard::getInstance()->setC(false);
         else Keyboard::getInstance()->setC(true);

@@ -7,6 +7,7 @@ double PotentialField::obstacle = 1;
 PotentialField::PotentialField()
 {
     potential = PotentialField::target;
+    error = 0;
 }
 
 void PotentialField::setPotential(double potential)

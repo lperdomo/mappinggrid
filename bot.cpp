@@ -132,7 +132,7 @@ void Bot::doExploration()
         if (Keyboard::getInstance()->isQ()) {
             break;
         }
-        ArUtil::sleep(500);
+        ArUtil::sleep(250);
     }
     if (Keyboard::getInstance()->isQ()) this->shutdown();
 }
