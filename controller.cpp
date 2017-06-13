@@ -38,8 +38,8 @@ void Controller::run()
  
 void Controller::update() 
 {
-    grid->updateWithBayesian(bot);
-    //grid->updateWithHistogramic(bot);
+    //grid->updateWithBayesian(bot);
+    grid->updateWithHistogramic(bot);
     grid->updatePotentialFields(bot);
     this->updateBot();
 

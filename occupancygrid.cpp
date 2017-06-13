@@ -78,7 +78,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
 
     double rangeLimit = round(5000/cellScale),
            rangeMax = round(2000/cellScale),
-           tolerance = round(50/cellScale),
+           tolerance = round(100/cellScale),
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh();

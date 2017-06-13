@@ -24,7 +24,7 @@ Bot::~Bot()
 bool Bot::start() 
 { 
     Aria::init(); 
-    //parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
+    parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
     this->addRangeDevice(&sick);
     botConn.parseArgs(); 
     if (!botConn.connectRobot()) { 
