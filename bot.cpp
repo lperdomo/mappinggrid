@@ -24,7 +24,7 @@ Bot::~Bot()
 bool Bot::start() 
 { 
     Aria::init(); 
-    parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
+    //parser.addDefaultArgument("-rh 192.168.1.11 -remoteLaserTcpPort 10002");
     this->addRangeDevice(&sick);
     botConn.parseArgs(); 
     if (!botConn.connectRobot()) { 
@@ -145,10 +145,10 @@ void Bot::doTeleOp()
     while (Aria::getRunning()) {         
         this->lock();
         if (Keyboard::getInstance()->isArrowUp()) { 
-            this->move(100);
+            this->move(50);
         }
         if (Keyboard::getInstance()->isArrowDown()) { 
-            this->move(-100);
+            this->move(-50);
         }
         if (Keyboard::getInstance()->isArrowLeft()) { 
             this->setDeltaHeading(10);
@@ -161,7 +161,7 @@ void Bot::doTeleOp()
         }
         this->unlock();
         this->readingSonar();
-        ArUtil::sleep(500); 
+        ArUtil::sleep(250);
     }
     if (Keyboard::getInstance()->isQ()) this->shutdown();
 } 

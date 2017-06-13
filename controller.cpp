@@ -7,7 +7,7 @@ Controller::Controller(double width, double height, double cellSize, double cell
     QObject() 
 { 
     grid = new OccupancyGrid(width, height, cellSize, cellScale); 
-    scene = new SceneGrid((width/2)*2*-1, (height/2)*2*-1, width*2, height*2, grid);
+    scene = new SceneGrid((width/2)*cellSize*-1, (height/2)*cellSize*-1, width*cellSize, height*cellSize, grid);
     view = new QGraphicsView(scene); 
     thread = new QThread(); 
 } 
@@ -38,8 +38,8 @@ void Controller::run()
  
 void Controller::update() 
 {
-    //grid->updateWithBayesian(bot);
-    grid->updateWithHistogramic(bot);
+    grid->updateWithBayesian(bot);
+    //grid->updateWithHistogramic(bot);
     grid->updatePotentialFields(bot);
     this->updateBot();
 
@@ -51,7 +51,7 @@ void Controller::showView()
     if (!view->isVisible()) { 
         view->show(); 
     } else { 
-        //view->centerOn(bot->getX()*grid->getCellSize(), bot->getY()*grid->getCellSize()*-1);
+        //view->centerOn(round(bot->getX()/grid->getCellScale())*grid->getCellSize(), round(bot->getY()/grid->getCellScale())*grid->getCellSize()*-1);
         view->viewport()->update();
 
         //std::cout << "x " << round(bot->getX()/grid->getCellScale())*grid->getCellSize() << " y " << round(bot->getY()/grid->getCellScale())*grid->getCellSize()*-1 << std::endl;

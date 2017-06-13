@@ -76,8 +76,9 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
-    double rangeMax = round(2000/cellScale),
-           tolerance = round(100/cellScale),
+    double rangeLimit = round(5000/cellScale),
+           rangeMax = round(2000/cellScale),
+           tolerance = round(50/cellScale),
            botx = round(bot->getX()/cellScale),
            boty = round(bot->getY()/cellScale),
            botth = bot->getTh();
@@ -87,7 +88,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
     for (int i = 0; i < sensor.size(); i++) {
         double angleSonar = sensor.at(i).getSensorTh()*-1,
                rangeSensor = sensor.at(i).getRange()/cellScale,
-               rangeA = (rangeSensor+tolerance > rangeMax ? rangeMax : rangeSensor+tolerance),
+               rangeA = (rangeSensor+tolerance > rangeLimit ? rangeLimit : rangeSensor+tolerance),
                rangeB = (rangeSensor-tolerance < 1 ? 1 : rangeSensor-tolerance),
                angleStart, angleEnd;
 
@@ -102,8 +103,8 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
         }
 
         for (double angle = angleStart; angle <= angleEnd; angle+=0.1) {
-            int x = round(rangeMax*cos((botth-angle)*M_PI/180)),
-                y = round(rangeMax*sin((botth-angle)*M_PI/180));
+            int x = round(rangeLimit*cos((botth-angle)*M_PI/180)),
+                y = round(rangeLimit*sin((botth-angle)*M_PI/180));
 
             double cellMax = max(fabs(x), fabs(y)),
                    stepX = x/cellMax,
@@ -115,21 +116,27 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
                 double range = Util::distanceBetweenPoints(cellX, cellY, botx, boty, width, height);
 
                 if (!(cellX == botx && cellY == boty)) {
-                    if (rangeSensor >= rangeMax) {
-                        this->assign(cellX, cellY, i+1.5);
-                        this->at(cellX, cellY)->setRegion(3);
-                        this->at(cellX, cellY)->bayesianProbability(range, rangeMax, fabs(angle-angleSonar), 15);
+                    if (rangeSensor >= rangeLimit) {
+                            this->assign(cellX, cellY, i+1.5);
+                            this->at(cellX, cellY)->setRegion(3);
+                        if (range <= rangeMax) {
+                            this->at(cellX, cellY)->bayesianProbability(range, rangeLimit, fabs(angle-angleSonar), 15);
+                        }
                     } else if (rangeA < range) {
                         this->assign(cellX, cellY, i+1.5);
                         this->at(cellX, cellY)->setRegion(3);
                     } else if (rangeB <= range && range <= rangeA) {
-                        this->assign(cellX, cellY, i+1);
-                        this->at(cellX, cellY)->setRegion(1);
-                        this->at(cellX, cellY)->bayesianProbability(range, rangeMax, fabs(angle-angleSonar), 15);
+                            this->assign(cellX, cellY, i+1);
+                            this->at(cellX, cellY)->setRegion(1);
+                        if (range <= rangeMax) {
+                            this->at(cellX, cellY)->bayesianProbability(range, rangeLimit, fabs(angle-angleSonar), 15);
+                        }
                     } else if (range < rangeB) {
-                        this->assign(cellX, cellY, i+1.5);
-                        this->at(cellX, cellY)->setRegion(2);
-                        this->at(cellX, cellY)->bayesianProbability(range, rangeMax, fabs(angle-angleSonar), 15);
+                            this->assign(cellX, cellY, i+1.5);
+                            this->at(cellX, cellY)->setRegion(2);
+                        if (range <= rangeMax) {
+                            this->at(cellX, cellY)->bayesianProbability(range, rangeLimit, fabs(angle-angleSonar), 15);
+                        }
                     }
                 }
             }
@@ -234,7 +241,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
     double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
     //double left = botWidth*-1, right = botWidth, top = botHeight*-1, bottom = botHeight;
     bool loop = true;
-    while (error > errorMax) {
+    //while (error > errorMax) {
         error = 0;
         //std::cout << "error" << error << std::endl;
         for (double x = left; x < right; x++)  {
@@ -283,7 +290,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
         //    std::cout << "entrou" << std::endl;
         //}
         //std::cout << "error" << error << std::endl;
-    }
+    //}
 }
 
 void OccupancyGrid::calculatePotential(double x, double y)
