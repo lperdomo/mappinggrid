@@ -48,13 +48,15 @@ public:
     double getHeight();
     double getCellSize();
     double getCellScale();
+    void setBot(Bot *bot);
     OccupancyGridCell *at(double x, double y);
     void assign(double x, double y, double sensorId);
     void reset(double botx, double boty);
-    void updateWithBayesian(Bot *bot);
-    void updateWithHistogramic(Bot *bot);
-    void updatePotentialFields(Bot *bot);
+    void updateWithBayesian();
+    void updateWithHistogramic();
+    void updatePotentialFields();
     void calculatePotential(double x, double y);
+    void checkBadExploration();
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 
@@ -62,10 +64,11 @@ private:
     double cellSize;
     double cellScale;
     unsigned potentialIterations;
+    Bot *bot;
 signals: 
  
 public slots: 
- 
+    void doOccupancyGrid();
 }; 
  
 #endif // OCCUPANCYGRID_H 

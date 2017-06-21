@@ -21,7 +21,8 @@ private:
     SceneGrid *scene; 
     QGraphicsView *view; 
     OccupancyGrid *grid; 
-    QThread *thread; 
+    QThread *thread;
+    QThread *threadB;
     void showView(); 
     void updateBot();
 signals: 

@@ -34,7 +34,7 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                 if (grid->at(x, y)->getBayesian() || grid->at(x, y)->getHistogramic()) {
                     if (grid->at(x, y)->getBayesian()) occupied = grid->at(x, y)->getBayesian()->getOccupied();
                     if (grid->at(x, y)->getHistogramic()) occupied = grid->at(x, y)->getHistogramic()->proportionalCV();
-                    painter->setPen(QPen(QColor(220, 220, 220)));
+                    painter->setPen(QPen(QColor(240, 240, 240, 100)));
                     int cor = 255-(255*occupied);
                     if (cor >= 255) cor = 254;
                     else if (cor <= 0) cor = 1;
@@ -51,11 +51,11 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                             else core = 255-(200*grid->at(x, y)->getPotentialField()->getPotential());
                             if (core >= 255) core = 254;
                             else if (core <= 0) core = 1;
-                            painter->setPen(QPen(QColor(220, 220, 220)));
+                            painter->setPen(QPen(QColor(240, 240, 240, 100)));
                             painter->setBrush(QBrush(QColor(0, core, 0, 225)));
                             painter->drawRect(size*x, size*y*-1, size, size);
                         } else if (grid->at(x, y)->getPotentialField()->getPotential() != PotentialField::obstacle && size >= 8) {
-                            painter->setPen(QPen(Qt::black));
+                            painter->setPen(QPen(QColor(0, 0, 0)));
                             painter->setBrush(QBrush(Qt::black));
                             painter->drawLine(cx, cy*-1, nx, ny*-1);
                             painter->drawRect(nx, ny*-1, 1, 1);
@@ -99,7 +99,7 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
 void SceneGridItem::drawColoredRect(QPainter *painter, double x, double y, QColor color)
 {
     double size = grid->getCellSize();
-    painter->setPen(QPen(QColor(255, 255, 255, 1)));
+    painter->setPen(QPen(QColor(240, 240, 240, 100)));
     painter->setBrush(QBrush(color));
     painter->drawRect(size*x, size*y*-1, size, size);
 }

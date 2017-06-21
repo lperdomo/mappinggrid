@@ -9,7 +9,8 @@ Controller::Controller(double width, double height, double cellSize, double cell
     grid = new OccupancyGrid(width, height, cellSize, cellScale); 
     scene = new SceneGrid((width/2)*cellSize*-1, (height/2)*cellSize*-1, width*cellSize, height*cellSize, grid);
     view = new QGraphicsView(scene); 
-    thread = new QThread(); 
+    thread = new QThread();
+    threadB = new QThread();
 } 
  
 Controller::~Controller() 
@@ -19,11 +20,14 @@ Controller::~Controller()
     delete scene; 
     delete grid; 
     delete thread;
+    delete threadB;
 }
  
 void Controller::setBot(Bot *bot) 
 { 
     this->bot = bot; 
+    this->grid->setBot(bot);
+    this->grid->connect(this->bot, SIGNAL(reading()), grid, SLOT(doOccupancyGrid()));
     this->connect(this->bot, SIGNAL(reading()), this, SLOT(update()));
     this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doExploration()));
     //this->bot->connect(thread, SIGNAL(started()), this->bot, SLOT(doTeleOp()));
@@ -33,16 +37,13 @@ void Controller::setBot(Bot *bot)
  
 void Controller::run() 
 { 
-    thread->start(); 
+    thread->start();
+    threadB->start();
 } 
  
 void Controller::update() 
 {
-    //grid->updateWithBayesian(bot);
-    grid->updateWithHistogramic(bot);
-    grid->updatePotentialFields(bot);
     this->updateBot();
-
     this->showView();
 } 
  
@@ -67,7 +68,7 @@ void Controller::updateBot()
     double degree = fmod((grid->at(botx, boty)->getPotentialField()->getTh()-botth+180+360), 360)-180;
     double rad = degree*(M_PI/180);
 
-    if (potential < 1) {
+    //if (potential < 1) {
         if (degree <= 90 && degree >= -90) {
             bot->setLeftWheel(50-50*sin(rad));
             bot->setRightWheel(50+50*sin(rad));
@@ -75,8 +76,8 @@ void Controller::updateBot()
             bot->setLeftWheel(10-20*sin(rad));
             bot->setRightWheel(10+20*sin(rad));
         }
-    } else {
-        bot->setLeftWheel(0);
-        bot->setRightWheel(0);
-    }
+    //} else {
+    //    bot->setLeftWheel(0);
+    //    bot->setRightWheel(0);
+    //}
 }

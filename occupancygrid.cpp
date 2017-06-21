@@ -36,6 +36,11 @@ double OccupancyGrid::getCellScale()
     return this->cellScale; 
 } 
  
+void OccupancyGrid::setBot(Bot *bot)
+{
+    this->bot = bot;
+}
+
 OccupancyGridCell *OccupancyGrid::at(double x, double y) 
 { 
     x = x + (width/2); 
@@ -55,6 +60,14 @@ void OccupancyGrid::assign(double x, double y, double sensorId)
     } 
 }
 
+void OccupancyGrid::doOccupancyGrid()
+{
+    //this->updateWithBayesian();
+    this->updateWithHistogramic();
+    this->updatePotentialFields();
+    this->checkBadExploration();
+}
+
 void OccupancyGrid::reset(double botx, double boty)
 {
     double rangeMax = round(5000/cellScale),
@@ -72,7 +85,7 @@ void OccupancyGrid::reset(double botx, double boty)
     }
 }
 
-void OccupancyGrid::updateWithBayesian(Bot *bot)
+void OccupancyGrid::updateWithBayesian()
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
@@ -144,7 +157,7 @@ void OccupancyGrid::updateWithBayesian(Bot *bot)
     }
 }
 
-void OccupancyGrid::updateWithHistogramic(Bot *bot)
+void OccupancyGrid::updateWithHistogramic()
 {
     vector<ArSensorReading> sensor = bot->getSonar();
 
@@ -202,11 +215,11 @@ void OccupancyGrid::updateWithHistogramic(Bot *bot)
     }
 }
 
-void OccupancyGrid::updatePotentialFields(Bot *bot)
+void OccupancyGrid::updatePotentialFields()
 {
     double limitx = width/2,
            limity = height/2,
-           error = 1, errorMax = 0.1;
+           error = 1, errorMax = 0.01;
     potentialIterations++;
     for (double x = limitx*-1; x < limitx; x++)  {
         for (double y = limity*-1; y < limity; y++) {
@@ -241,7 +254,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
     double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
     //double left = botWidth*-1, right = botWidth, top = botHeight*-1, bottom = botHeight;
     bool loop = true;
-    //while (error > errorMax) {
+    while (error > errorMax) {
         error = 0;
         //std::cout << "error" << error << std::endl;
         for (double x = left; x < right; x++)  {
@@ -290,7 +303,7 @@ void OccupancyGrid::updatePotentialFields(Bot *bot)
         //    std::cout << "entrou" << std::endl;
         //}
         //std::cout << "error" << error << std::endl;
-    //}
+    }
 }
 
 void OccupancyGrid::calculatePotential(double x, double y)
@@ -347,6 +360,62 @@ void OccupancyGrid::calculatePotential(double x, double y)
                 this->at(x, y)->getPotentialField()->setTh(atan2(-(p3-p4),-(p1-p2))*180/M_PI);
             }
         }
+    }
+}
+
+void OccupancyGrid::checkBadExploration()
+{
+    double rangeMax = round(5000/cellScale),
+           botx = bot->getX()/cellScale,
+           boty = bot->getY()/cellScale,
+           botWidth = (botx+rangeMax > width/2 ? width/2 : botx+rangeMax),
+           botHeight = (boty+rangeMax > height/2 ? height/2 : boty+rangeMax);
+    double limitx = width/2,
+           limity = height/2;
+    double left = limitx*-1, right = limitx, top = limity*-1, bottom = limity;
+    bool found = false;
+    for (double x = left; x < right; x++)  {
+        for (double y = top; y < bottom; y++) {
+            if (!this->at(x, y)) {
+                if (this->at(x-1, y)) if (this->at(x-1, y)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x-1, y)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x-1, y-1)) if (this->at(x-1, y-1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x-1, y-1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x+1, y-1)) if (this->at(x+1, y-1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x+1, y-1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x-1, y+1)) if (this->at(x-1, y+1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x-1, y+1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x+1, y+1)) if (this->at(x+1, y+1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x+1, y+1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x+1, y)) if (this->at(x+1, y)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x+1, y)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x, y-1)) if (this->at(x, y-1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x, y-1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+                if (this->at(x, y+1)) if (this->at(x, y+1)->getPotentialField()->getPotential() < PotentialField::obstacle) {
+                    this->at(x, y+1)->getPotentialField()->setPotential(PotentialField::target);
+                    found = true;
+                }
+            }
+        }
+    }
+    if (found) {
+        std::cout << "badexplorer" << std::endl;
+    } else {
+        std::cout << "done" << std::endl;
     }
 }
 
