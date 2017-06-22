@@ -49,6 +49,7 @@ public:
     double getCellSize();
     double getCellScale();
     void setBot(Bot *bot);
+    bool getStopPotential();
     OccupancyGridCell *at(double x, double y);
     void assign(double x, double y, double sensorId);
     void reset(double botx, double boty);
@@ -56,14 +57,15 @@ public:
     void updateWithHistogramic();
     void updatePotentialFields();
     void calculatePotential(double x, double y);
-    void checkBadExploration();
+    bool isExplorationEnd();
 private:
     std::vector<std::vector<OccupancyGridCell*> > matrix; 
     double width; 
     double height; 
     double cellSize;
     double cellScale;
-    unsigned potentialIterations;
+    int potentialIterations;
+    bool stopPotential;
     Bot *bot;
 signals: 
  

@@ -68,7 +68,7 @@ void Controller::updateBot()
     double degree = fmod((grid->at(botx, boty)->getPotentialField()->getTh()-botth+180+360), 360)-180;
     double rad = degree*(M_PI/180);
 
-    //if (potential < 1) {
+    if (!grid->getStopPotential()) {
         if (degree <= 90 && degree >= -90) {
             bot->setLeftWheel(50-50*sin(rad));
             bot->setRightWheel(50+50*sin(rad));
@@ -76,8 +76,8 @@ void Controller::updateBot()
             bot->setLeftWheel(10-20*sin(rad));
             bot->setRightWheel(10+20*sin(rad));
         }
-    //} else {
-    //    bot->setLeftWheel(0);
-    //    bot->setRightWheel(0);
-    //}
+    } else {
+        bot->setLeftWheel(0);
+        bot->setRightWheel(0);
+    }
 }

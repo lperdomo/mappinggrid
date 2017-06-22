@@ -48,9 +48,8 @@ void SceneGridItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                         if (Keyboard::getInstance()->isC() || size < 8) {
                             int core;
                             if (grid->at(x, y)->getPotentialField()->getPotential() == PotentialField::obstacle) core = 0;
-                            else core = 255-(200*grid->at(x, y)->getPotentialField()->getPotential());
+                            else core = 255-(160*grid->at(x, y)->getPotentialField()->getPotential());
                             if (core >= 255) core = 254;
-                            else if (core <= 0) core = 1;
                             painter->setPen(QPen(QColor(240, 240, 240, 100)));
                             painter->setBrush(QBrush(QColor(0, core, 0, 225)));
                             painter->drawRect(size*x, size*y*-1, size, size);
